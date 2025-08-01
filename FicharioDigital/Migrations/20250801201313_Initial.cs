@@ -12,19 +12,19 @@ namespace FicharioDigital.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Categorias",
+                name: "Categories",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Nome = table.Column<string>(type: "TEXT", nullable: false)
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Categorias", x => x.Id);
+                    table.PrimaryKey("PK_Categories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Pacientes",
+                name: "Patients",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -34,35 +34,59 @@ namespace FicharioDigital.Migrations
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     Cpf = table.Column<string>(type: "TEXT", nullable: true),
                     Address = table.Column<string>(type: "TEXT", nullable: true),
-                    Phones = table.Column<string>(type: "TEXT", nullable: true),
                     Responsible = table.Column<string>(type: "TEXT", nullable: true),
                     CategoryId = table.Column<Guid>(type: "TEXT", nullable: true),
                     IsArchived = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Pacientes", x => x.Id);
+                    table.PrimaryKey("PK_Patients", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Pacientes_Categorias_CategoryId",
+                        name: "FK_Patients_Categories_CategoryId",
                         column: x => x.CategoryId,
-                        principalTable: "Categorias",
+                        principalTable: "Categories",
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Contact",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: true),
+                    Phone = table.Column<string>(type: "TEXT", nullable: true),
+                    PatientId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Contact", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Contact_Patients_PatientId",
+                        column: x => x.PatientId,
+                        principalTable: "Patients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
-                name: "IX_Categorias_Nome",
-                table: "Categorias",
-                column: "Nome",
+                name: "IX_Categories_Name",
+                table: "Categories",
+                column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Pacientes_CategoryId",
-                table: "Pacientes",
+                name: "IX_Contact_PatientId",
+                table: "Contact",
+                column: "PatientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Patients_CategoryId",
+                table: "Patients",
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Pacientes_Cpf",
-                table: "Pacientes",
+                name: "IX_Patients_Cpf",
+                table: "Patients",
                 column: "Cpf",
                 unique: true);
         }
@@ -71,10 +95,13 @@ namespace FicharioDigital.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Pacientes");
+                name: "Contact");
 
             migrationBuilder.DropTable(
-                name: "Categorias");
+                name: "Patients");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
         }
     }
 }

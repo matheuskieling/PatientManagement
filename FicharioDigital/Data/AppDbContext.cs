@@ -15,7 +15,7 @@ public class AppDbContext : DbContext
         }
     }
     
-    public DbSet<Patient> Pacientes { get; set; }
-    public DbSet<Category> Categorias { get; set; }
+    public DbSet<Patient> Patients { get; set; }
+    public DbSet<Category> Categories { get; set; }
     
 }

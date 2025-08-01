@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using FicharioDigital.Model.DTO;
 using Microsoft.EntityFrameworkCore;
 
 namespace FicharioDigital.Model;
@@ -15,7 +16,7 @@ public class Patient
     public string? Name { get; set; }
     public string? Cpf { get; set; }
     public string? Address { get; set; }
-    public string? Phones { get; set; }
+    public List<Contact> Contacts { get; set; } = [];
     public string? Responsible { get; set; }
     public Category? Category { get; set; }
     public bool IsArchived { get; set; } = false;

@@ -1,4 +1,8 @@
-﻿using FicharioDigital.Model;
+﻿using FicharioDigital.Business;
+using FicharioDigital.Business.Interfaces;
+using FicharioDigital.Data.Repositories;
+using FicharioDigital.Data.Repositories.Interfaces;
+using FicharioDigital.Model;
 using Microsoft.EntityFrameworkCore;
 
 namespace FicharioDigital.Infrastructure;
@@ -12,5 +16,14 @@ public static class DependencyInjection
             var connectionString = configuration.GetConnectionString("Db");
             options.UseSqlite(connectionString ?? throw new ArgumentNullException(nameof(connectionString), "Connection string 'DefaultConnection' not found."));
         });
+        
+        #region Services
+        services.AddScoped<IPatientService, PatientService>();
+        #endregion
+        
+        #region Repositories
+        services.AddScoped<IPatientRepository, PatientRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        #endregion
     }
 }

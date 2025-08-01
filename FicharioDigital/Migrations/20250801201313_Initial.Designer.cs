@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FicharioDigital.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250801190641_Initial")]
+    [Migration("20250801201313_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -26,16 +26,38 @@ namespace FicharioDigital.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Nome")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Nome")
+                    b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Categorias");
+                    b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("FicharioDigital.Model.Contact", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("Contact");
                 });
 
             modelBuilder.Entity("FicharioDigital.Model.Patient", b =>
@@ -68,9 +90,6 @@ namespace FicharioDigital.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Phones")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Responsible")
                         .HasColumnType("TEXT");
 
@@ -81,7 +100,16 @@ namespace FicharioDigital.Migrations
                     b.HasIndex("Cpf")
                         .IsUnique();
 
-                    b.ToTable("Pacientes");
+                    b.ToTable("Patients");
+                });
+
+            modelBuilder.Entity("FicharioDigital.Model.Contact", b =>
+                {
+                    b.HasOne("FicharioDigital.Model.Patient", null)
+                        .WithMany("Contacts")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("FicharioDigital.Model.Patient", b =>
@@ -91,6 +119,11 @@ namespace FicharioDigital.Migrations
                         .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("FicharioDigital.Model.Patient", b =>
+                {
+                    b.Navigation("Contacts");
                 });
 #pragma warning restore 612, 618
         }

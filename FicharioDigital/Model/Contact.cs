@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore;
 
 namespace FicharioDigital.Model;
 
-[Index(nameof(Name), IsUnique = true)]
-public class Category
+public class Contact
 {
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();
-    public required string Name { get; set; }
+    public string? Name { get; set; }
+    public string? Phone { get; set; }
+    public Guid PatientId { get; set; }
 }
