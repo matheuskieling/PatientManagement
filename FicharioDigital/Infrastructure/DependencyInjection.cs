@@ -19,11 +19,14 @@ public static class DependencyInjection
         
         #region Services
         services.AddScoped<IPatientService, PatientService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<ITokenService, TokenService>();
         #endregion
         
         #region Repositories
         services.AddScoped<IPatientRepository, PatientRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
         #endregion
     }
 }

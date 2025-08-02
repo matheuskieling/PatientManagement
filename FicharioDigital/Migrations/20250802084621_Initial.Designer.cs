@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FicharioDigital.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250801201313_Initial")]
+    [Migration("20250802084621_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -101,6 +101,32 @@ namespace FicharioDigital.Migrations
                         .IsUnique();
 
                     b.ToTable("Patients");
+                });
+
+            modelBuilder.Entity("FicharioDigital.Model.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Salt")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("FicharioDigital.Model.Contact", b =>

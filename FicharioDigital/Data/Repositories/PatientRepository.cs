@@ -67,10 +67,33 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
         await context.SaveChangesAsync();
         return patient;
     }
+    
+    public async Task SaveAsync()
+    {
+        await context.SaveChangesAsync();
+    }
 
     public async Task<long> GetNextPatientNumberAsync()
     {
         var maxFileNumber = await context.Patients.MaxAsync(p => p.FileNumber) ?? 1;
         return maxFileNumber + 1;
+    }
+
+    public async Task<Patient?> FindPatientByFileNumberAsync(long fileNumber)
+    {
+        var patient = await context.Patients.FirstOrDefaultAsync(p => p.FileNumber == fileNumber);
+        return patient;
+    }
+
+    public async Task<Patient?> ValidateAsync(string? name, string? cpf, long? fileNumber)
+    {
+        var patient = context.Patients.FirstOrDefault(p =>
+            p.IsArchived == false && (
+                (fileNumber.HasValue && p.FileNumber == fileNumber) ||
+                (!string.IsNullOrEmpty(name) && p.Name == name) || 
+                (!string.IsNullOrEmpty(cpf) && p.Cpf == cpf)
+            )
+        );
+        return patient;
     }
 }

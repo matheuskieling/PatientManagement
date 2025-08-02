@@ -100,6 +100,32 @@ namespace FicharioDigital.Migrations
                     b.ToTable("Patients");
                 });
 
+            modelBuilder.Entity("FicharioDigital.Model.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Salt")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("Users");
+                });
+
             modelBuilder.Entity("FicharioDigital.Model.Contact", b =>
                 {
                     b.HasOne("FicharioDigital.Model.Patient", null)

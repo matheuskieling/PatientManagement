@@ -17,5 +17,7 @@ public class AppDbContext : DbContext
     
     public DbSet<Patient> Patients { get; set; }
     public DbSet<Category> Categories { get; set; }
+    public DbSet<User> Users { get; set; }
+    
     
 }

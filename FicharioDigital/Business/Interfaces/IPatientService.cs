@@ -7,5 +7,6 @@ public interface IPatientService
 {
     Task<PageableResponseDto<Patient>> ListAsync(ListPatientRequestDto request);
     Task<Patient> CreateAsync(PatientRequestDto request);
+    Task<ValidationResults> ValidateAsync(PatientRequestDto request);
     Task<long> GetNextPatientNumberAsync();
 }

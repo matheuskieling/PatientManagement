@@ -1,13 +1,14 @@
-﻿using FicharioDigital.Business;
-using FicharioDigital.Business.Interfaces;
+﻿using FicharioDigital.Business.Interfaces;
 using FicharioDigital.Model.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FicharioDigital.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("[controller]")]
-public class PacienteController(IPatientService service) : ControllerBase
+public class PatientController(IPatientService service) : ControllerBase
 {
     [HttpGet("List")]
     public async Task<IActionResult> List([FromQuery] ListPatientRequestDto request)
@@ -21,6 +22,13 @@ public class PacienteController(IPatientService service) : ControllerBase
     {
         var patient = await service.CreateAsync(request);
         return CreatedAtAction(nameof(CreatePatient), new { patient.Id }, patient);
+    }
+    
+    [HttpPost("Validate")]
+    public async Task<IActionResult> ValidatePatient(PatientRequestDto request)
+    {
+        var validationResults = await service.ValidateAsync(request);
+        return Ok(validationResults);
     }
 
     [HttpGet("GetNextFileNumber")]
