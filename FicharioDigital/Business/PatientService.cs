@@ -3,6 +3,7 @@ using FicharioDigital.Data.Repositories.Interfaces;
 using FicharioDigital.Model;
 using FicharioDigital.Model.DTO;
 using FicharioDigital.Model.Mapper;
+using Microsoft.IdentityModel.Tokens;
 
 namespace FicharioDigital.Business;
 
@@ -43,7 +44,22 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
 
     public async Task<long> GetNextPatientNumberAsync()
     {
-        return await repository.GetNextPatientNumberAsync();
+        var patients = await repository.ListAllAsync();
+        var index = 1;
+        if (patients.IsNullOrEmpty())
+        {
+            return 1;
+        }
+        foreach (var fileNumber in patients.Select(p => p.FileNumber))
+        {
+            if (fileNumber != index)
+            {
+                return index;
+            }
+            index++;
+        }
+
+        return index;
     }
 
     public async Task<ValidationResults> ValidateAsync(PatientRequestDto request)

@@ -93,7 +93,7 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
 
     public async Task<Patient?> ValidateAsync(string? name, string? cpf, long? fileNumber)
     {
-        var patient = context.Patients.FirstOrDefault(p =>
+        var patient = await context.Patients.FirstOrDefaultAsync(p =>
             p.IsArchived == false && (
                 (fileNumber.HasValue && p.FileNumber == fileNumber) ||
                 (!string.IsNullOrEmpty(name) && p.Name == name) || 
@@ -101,5 +101,10 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
             )
         );
         return patient;
+    }
+
+    public async Task<List<Patient>> ListAllAsync()
+    {
+        return await context.Patients.Where(p => p.FileNumber.HasValue).OrderBy(p => p.FileNumber).ToListAsync();
     }
 }

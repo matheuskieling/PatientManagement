@@ -14,4 +14,5 @@ public interface IPatientRepository
     
     Task<Patient?> FindPatientByFileNumberAsync(long fileNumber);
     Task<Patient?> FindPatientByCpfAsync(string cpf);
+    Task<List<Patient>> ListAllAsync();
 }
