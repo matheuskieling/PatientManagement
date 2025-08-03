@@ -21,8 +21,10 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod();
     });
 });
+builder.WebHost.UseUrls("http://0.0.0.0:5000");
 
 var app = builder.Build();
+
 
 app.Migrate();
 app.UseCors("AllowSpecificOrigins");
@@ -32,6 +34,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 
 app.UseHttpsRedirection();
 
