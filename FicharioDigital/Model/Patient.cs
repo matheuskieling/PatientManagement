@@ -12,12 +12,14 @@ public class Patient
     
     public long? FileNumber { get; set; }
     public DateTime? BirthDate { get; set; }
-    public string? HealthPlan { get; set; }
+    public HealthPlan? HealthPlan { get; set; }
+    public string? HealthPlanNumber { get; set; }
+    public Gender? Gender { get; set; }
     public string? Name { get; set; }
     public string? Cpf { get; set; }
+    public string? Phone { get; set; }
     public string? Address { get; set; }
     public List<Contact> Contacts { get; set; } = [];
-    public string? Responsible { get; set; }
     public Category? Category { get; set; }
     public bool IsArchived { get; set; } = false;
 }

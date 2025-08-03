@@ -37,7 +37,10 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
         if (!string.IsNullOrEmpty(request.CategoryName))
         {
             var category = await categoryRepository.GetCategoryByName(request.CategoryName);
-            patient.Category = category ?? await categoryRepository.CreateCategoryAsync(new Category { Name = request.CategoryName });
+            if (category != null)
+            {
+                patient.Category = category;
+            }
         }
         return await repository.CreateAsync(patient);
     }

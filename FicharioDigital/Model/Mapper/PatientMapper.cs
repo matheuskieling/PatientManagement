@@ -10,11 +10,12 @@ public static class PatientMapper
         {
             FileNumber = request.FileNumber,
             BirthDate = request.BirthDate,
-            HealthPlan = request.HealthPlan,
+            HealthPlanNumber = request.HealthPlanNumber,
             Name = request.Name,
             Cpf = request.Cpf,
             Address = request.Address,
-            Responsible = request.Responsible,
+            Gender = request.Gender,
+            Phone = request.Phone,
         };
         patient.Contacts = request.Contacts.Select(c => c.ToContact(patient.Id)).ToList();
         return patient;

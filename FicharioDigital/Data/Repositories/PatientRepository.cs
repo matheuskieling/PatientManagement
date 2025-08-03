@@ -9,7 +9,7 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
 {
     public async Task<PageableResponseDto<Patient>> ListAsync(ListPatientRequestDto request)
     {
-        var query = context.Patients.Include(p => p.Contacts).Include(p => p.Category).AsQueryable();
+        var query = context.Patients.Include(p => p.Contacts).Include(p => p.Category).Include(p => p.HealthPlan).AsQueryable();
 
         if (request.FileNumber.HasValue)
             query = query.Where(p => EF.Functions.Like(p.FileNumber.ToString(), $"%{request.FileNumber}%"));
@@ -18,7 +18,7 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
             query = query.Where(p => p.BirthDate != null && p.BirthDate.Value.Date == request.BirthDate.Value.Date.Date);
 
         if (!string.IsNullOrEmpty(request.HealthPlan))
-            query = query.Where(p => EF.Functions.Like(p.HealthPlan, $"%{request.HealthPlan}%"));
+            query = query.Where(p => p.HealthPlan != null && EF.Functions.Like(p.HealthPlan.Name, $"%{request.HealthPlan}%"));
 
         if (!string.IsNullOrEmpty(request.Name))
             query = query.Where(p => EF.Functions.Like(p.Name, $"%{request.Name}%"));
@@ -32,9 +32,6 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
         if (!string.IsNullOrEmpty(request.Phones))
             query = query.Where(p => p.Contacts.Any(c => !string.IsNullOrEmpty(c.Phone) && c.Phone.Contains(request.Phones)));
         
-        if (!string.IsNullOrEmpty(request.Responsible))
-            query = query.Where(p => EF.Functions.Like(p.Responsible, $"%{request.Responsible}%"));
-
         if (!string.IsNullOrEmpty(request.Category))
             query = query.Where(p => p.Category != null && EF.Functions.Like(p.Category.Name, $"%{request.Category}%"));
         
