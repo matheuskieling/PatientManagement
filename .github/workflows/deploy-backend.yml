@@ -1,48 +1,34 @@
 name: Deploy Backend (.NET)
-
 on:
   workflow_dispatch:
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout código
         uses: actions/checkout@v3
-
       - name: Configurar SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
       - name: Deploy via SSH
         run: |
           ssh -o StrictHostKeyChecking=no deploy@72.60.2.46 << 'EOF'
             # Criar diretório se não existir
             mkdir -p ~/PatientManagement
-
             cd ~/PatientManagement || exit 1
-
             # Remover pasta antiga se existir
             rm -rf PatientManagement || true
-
             # Clonar repositório via HTTPS para evitar problemas SSH
             git clone https://github.com/matheuskieling/PatientManagement.git
-
             cd PatientManagement/FicharioDigital || exit 1
-
-            # Criar arquivo .env corretamente
-            cat > .env << EOT
-            JWT_SECRET_KEY=${{ secrets.JWT_KEY }}
-            CONNECTION_STRING=${{ secrets.CONNECTION_STRING }}
-
+            # Criar arquivo .env usando echo
+            echo "JWT_SECRET_KEY=${{ secrets.JWT_KEY }}" > .env
+            echo "CONNECTION_STRING=${{ secrets.CONNECTION_STRING }}" >> .env
             # Restaurar pacotes e publicar
             ~/.dotnet/dotnet publish -c Release -o out
-
             # Parar aplicação antiga, se existir
             pkill -f FicharioDigital.dll || true
-
             # Rodar a aplicação em background
             nohup ~/.dotnet/dotnet out/FicharioDigital.dll > log.txt 2>&1 &
           EOF
