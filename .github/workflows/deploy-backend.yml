@@ -34,9 +34,8 @@ jobs:
 
             # Criar arquivo .env corretamente
             cat > .env << EOT
-            JWT_SECRET_KEY=05e076081fd2a1644f8967851e9336fb
-            CONNECTION_STRING=Host=localhost;Port=5432;Database=clinic_db;Username=clinic_user;Password=clinic_pass;
-            EOT
+            JWT_SECRET_KEY=${{ secrets.JWT_KEY }}
+            CONNECTION_STRING=${{ secrets.CONNECTION_STRING }}
 
             # Restaurar pacotes e publicar
             ~/.dotnet/dotnet publish -c Release -o out
