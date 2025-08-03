@@ -1,0 +1,33 @@
+name: Deploy Backend Manual
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Run Tests
+        run: dotnet test ./PatientManagement
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: deploy
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /home/deploy/PatientManagement
+            git pull origin main
+            docker-compose up -d
+            export JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}"
+            dotnet build
+            pkill -f PatientManagement || true
+            nohup dotnet run > app.log 2>&1 &
