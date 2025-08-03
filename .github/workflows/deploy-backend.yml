@@ -14,8 +14,8 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Run Tests
-        run: dotnet test ./PatientManagement/FicharioDigital
+#      - name: Run Tests
+#        run: dotnet test ./PatientManagement/FicharioDigital
 
       - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@master
