@@ -28,6 +28,7 @@ jobs:
             git pull origin main
             docker-compose up -d
             export JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}"
+            export CONNECTION_STRING="${{ secrets.CONNECTION_STRING }}"
             dotnet build
             pkill -f PatientManagement || true
             nohup dotnet run > app.log 2>&1 &
