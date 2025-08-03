@@ -1,38 +1,47 @@
-name: Deploy Backend Manual
+name: Deploy Backend (.NET)
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+    - name: Checkout código
+      uses: actions/checkout@v3
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '8.0.x'
+    - name: Configurar SSH
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy to VPS via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
-          # ignora completamente verificação do fingerprint
-          script_stop: true
-          script: |
-            mkdir -p ~/.ssh
-            ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+    - name: Deploy via SSH
+      run: |
+        ssh -o StrictHostKeyChecking=no deploy@72.60.2.46 << 'EOF'
+          # Caminho para o projeto na VPS
+          cd ~/PatientManagement
 
-            cd /home/deploy/PatientManagement/FicharioDigital
+          # Parar qualquer processo em execução (opcional)
+          pkill -f FicharioDigital || true
 
-            git pull origin main
+          cd ~/
 
-            docker-compose up -d
+          # Remover a pasta antiga e clonar novamente
+          rm -rf PatientManagement
+          git clone git@github.com:matheuskieling/PatientManagement.git
+          cd PatientManagement/FicharioDigital
 
-            pkill -f PatientManagement || true
+          # Criar arquivo .env
+          cat <<EOT > .env
+          JWT_SECRET_KEY=${{ secrets.JWT_KEY }}
+          CONNECTION_STRING=${{ secrets.CONNECTION_STRING }}
+          EOT
 
-            JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" CONNECTION_STRING="${{ secrets.CONNECTION_STRING }}" nohup dotnet run --urls "http://0.0.0.0:5000" > app.log 2>&1 &
+          # Restaurar pacotes e publicar
+          ~/.dotnet/dotnet publish -c Release -o out
+
+          # Rodar a aplicação em segundo plano (ajuste conforme necessário)
+          nohup ~/.dotnet/dotnet out/FicharioDigital.dll > log.txt 2>&1 &
+        EOF
