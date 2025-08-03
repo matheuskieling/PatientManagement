@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace FicharioDigital.Business;
 
-public class PatientService(IPatientRepository repository, ICategoryRepository categoryRepository) : IPatientService
+public class PatientService(IPatientRepository repository, ICategoryRepository categoryRepository, IHealthPlanRepository healthPlanRepository) : IPatientService
 {
     public async Task<PageableResponseDto<Patient>> ListAsync(ListPatientRequestDto request)
     {
@@ -43,6 +43,46 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
             }
         }
         return await repository.CreateAsync(patient);
+    }
+    
+    public async Task<Patient> UpdateAsync(PatientRequestDto request)
+    {
+        var patient = await repository.FindPatientByIdAsync(request.Id!.Value);
+        if (patient == null)
+        {
+            throw new KeyNotFoundException("Paciente não encontrado.");
+        }
+        patient.Name = request.Name;
+        patient.Cpf = request.Cpf;
+        patient.BirthDate = request.BirthDate;
+        patient.Address = request.Address;
+        patient.Phone = request.Phone;
+        patient.FileNumber = request.FileNumber;
+        if (!string.IsNullOrEmpty(request.HealthPlanName))
+        {
+            var healthPlan = await healthPlanRepository.GetHealthPlanByName(request.HealthPlanName);
+            patient.HealthPlan = healthPlan;
+        }
+        else
+        {
+            patient.HealthPlan = null;
+        }
+        
+        if (!string.IsNullOrEmpty(request.CategoryName))
+        {
+            var category = await categoryRepository.GetCategoryByName(request.CategoryName);
+            patient.Category = category;
+        }
+        else
+        {
+            patient.Category = null;
+        }
+        patient.HealthPlanNumber = request.HealthPlanNumber;
+        patient.Gender = request.Gender;
+        patient.Contacts = request.Contacts.Select(c => c.ToContact(patient.Id)).ToList();
+        patient.IsArchived = request.IsArchived ?? false;
+        await repository.SaveAsync();
+        return patient;
     }
 
     public async Task<long> GetNextPatientNumberAsync()
@@ -96,4 +136,26 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
         
         return validationResults;
     }
+    
+    public async Task DeleteAsync(Guid id) 
+    {
+        var patient = await repository.FindPatientByIdAsync(id);
+        if (patient == null)
+        {
+            throw new KeyNotFoundException("Paciente não encontrado.");
+        }
+        await repository.DeleteAsync(patient);
+    }
+    
+    public async Task ArchiveAsync(Guid id) 
+    {
+        var patient = await repository.FindPatientByIdAsync(id);
+        if (patient == null)
+        {
+            throw new KeyNotFoundException("Paciente não encontrado.");
+        }
+        patient.IsArchived = true;
+        await repository.SaveAsync();
+    }
+    
 }

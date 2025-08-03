@@ -9,16 +9,19 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
 {
     public async Task<PageableResponseDto<Patient>> ListAsync(ListPatientRequestDto request)
     {
-        var query = context.Patients.Include(p => p.Contacts).Include(p => p.Category).Include(p => p.HealthPlan).AsQueryable();
+        var query = context.Patients.Include(p => p.Contacts).Include(p => p.Category).Include(p => p.HealthPlan)
+            .AsQueryable();
 
         if (request.FileNumber.HasValue)
             query = query.Where(p => EF.Functions.Like(p.FileNumber.ToString(), $"%{request.FileNumber}%"));
 
         if (request.BirthDate.HasValue)
-            query = query.Where(p => p.BirthDate != null && p.BirthDate.Value.Date == request.BirthDate.Value.Date.Date);
+            query = query.Where(p =>
+                p.BirthDate != null && p.BirthDate.Value.Date == request.BirthDate.Value.Date.Date);
 
         if (!string.IsNullOrEmpty(request.HealthPlan))
-            query = query.Where(p => p.HealthPlan != null && EF.Functions.Like(p.HealthPlan.Name, $"%{request.HealthPlan}%"));
+            query = query.Where(p =>
+                p.HealthPlan != null && EF.Functions.Like(p.HealthPlan.Name, $"%{request.HealthPlan}%"));
 
         if (!string.IsNullOrEmpty(request.Name))
             query = query.Where(p => EF.Functions.Like(p.Name, $"%{request.Name}%"));
@@ -29,12 +32,19 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
         if (!string.IsNullOrEmpty(request.Address))
             query = query.Where(p => EF.Functions.Like(p.Address, $"%{request.Address}%"));
 
+        if (request.Gender.HasValue)
+            query = query.Where(p => p.Gender != null && p.Gender == request.Gender);
+
         if (!string.IsNullOrEmpty(request.Phones))
-            query = query.Where(p => p.Contacts.Any(c => !string.IsNullOrEmpty(c.Phone) && c.Phone.Contains(request.Phones)));
-        
+            query = query.Where(p => p.Phone != null
+                                     && (EF.Functions.Like(p.Phone, $"%{request.Phones}%")
+                                         || p.Contacts.Any(c =>
+                                             !string.IsNullOrEmpty(c.Phone) &&
+                                             (EF.Functions.Like(c.Phone, $"%{request.Phones}%")))));
+
         if (!string.IsNullOrEmpty(request.Category))
             query = query.Where(p => p.Category != null && EF.Functions.Like(p.Category.Name, $"%{request.Category}%"));
-        
+
         if (request.IsArchived != null)
             query = query.Where(p => p.IsArchived == request.IsArchived.Value);
 
@@ -64,16 +74,16 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
         await context.SaveChangesAsync();
         return patient;
     }
-    
-    public async Task SaveAsync()
+
+    public async Task DeleteAsync(Patient patient)
     {
+        context.Patients.Remove(patient);
         await context.SaveChangesAsync();
     }
 
-    public async Task<long> GetNextPatientNumberAsync()
+    public async Task SaveAsync()
     {
-        var maxFileNumber = await context.Patients.MaxAsync(p => p.FileNumber) ?? 1;
-        return maxFileNumber + 1;
+        await context.SaveChangesAsync();
     }
 
     public async Task<Patient?> FindPatientByFileNumberAsync(long fileNumber)
@@ -81,7 +91,13 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
         var patient = await context.Patients.FirstOrDefaultAsync(p => p.FileNumber == fileNumber);
         return patient;
     }
-    
+
+    public async Task<Patient?> FindPatientByIdAsync(Guid id)
+    {
+        var patient = await context.Patients.FirstOrDefaultAsync(p => p.Id == id);
+        return patient;
+    }
+
     public async Task<Patient?> FindPatientByCpfAsync(string cpf)
     {
         var patient = await context.Patients.FirstOrDefaultAsync(p => p.Cpf == cpf);
@@ -93,7 +109,7 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
         var patient = await context.Patients.FirstOrDefaultAsync(p =>
             p.IsArchived == false && (
                 (fileNumber.HasValue && p.FileNumber == fileNumber) ||
-                (!string.IsNullOrEmpty(name) && p.Name == name) || 
+                (!string.IsNullOrEmpty(name) && p.Name == name) ||
                 (!string.IsNullOrEmpty(cpf) && p.Cpf == cpf)
             )
         );

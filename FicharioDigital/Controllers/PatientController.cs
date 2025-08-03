@@ -17,6 +17,64 @@ public class PatientController(IPatientService service) : ControllerBase
         return Ok(patients);
     }
 
+    [HttpPost("Update")]
+    public async Task<IActionResult> UpdatePatient(PatientRequestDto request)
+    {
+        try
+        {
+            var patient = await service.UpdateAsync(request);
+            return Ok(patient);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Patient not Found",
+                Detail = ex.Message,
+                Status = StatusCodes.Status404NotFound,
+            });
+        }
+    }
+    
+    [HttpPost("Archive/{id}")]
+    public async Task<IActionResult> ArchivePatient(Guid id)
+    {
+        try
+        {
+            await service.ArchiveAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Patient not Found",
+                Detail = ex.Message,
+                Status = StatusCodes.Status404NotFound,
+            });
+        }
+    }
+
+    [HttpPost("Delete/{id}")]
+    public async Task<IActionResult> DeletePatient(Guid id)
+    {
+        try
+        {
+            await service.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Patient not Found",
+                Detail = ex.Message,
+                Status = StatusCodes.Status404NotFound,
+            });
+        }
+    }
+    
+    
     [HttpPost("Create")]
     public async Task<IActionResult> CreatePatient(PatientRequestDto request)
     {
