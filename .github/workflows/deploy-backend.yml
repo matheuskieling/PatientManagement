@@ -28,5 +28,6 @@ jobs:
             # Parar aplicação antiga, se existir
             pkill -f FicharioDigital.dll || true
             # Rodar a aplicação em background
+            docker compose up -d
             nohup ~/.dotnet/dotnet out/FicharioDigital.dll > log.txt 2>&1 &
           EOF
