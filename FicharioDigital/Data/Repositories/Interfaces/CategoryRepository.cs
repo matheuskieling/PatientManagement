@@ -10,6 +10,12 @@ public class CategoryRepository(AppDbContext context) : ICategoryRepository
         var category = await context.Categories.FirstOrDefaultAsync(c => c.Name == name);
         return category;
     }
+    
+    public async Task<Category?> GetCategoryById(Guid id)
+    {
+        var category = await context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+        return category;
+    }
 
     public async Task<Category> CreateCategoryAsync(Category category)
     {
@@ -22,4 +28,15 @@ public class CategoryRepository(AppDbContext context) : ICategoryRepository
     {
         return await context.Categories.ToListAsync();
     }
+
+    public async Task SaveAsync()
+    {
+        await context.SaveChangesAsync();
+    }
+    public async Task DeleteAsync(Category category)
+    {
+        context.Categories.Remove(category);
+        await context.SaveChangesAsync();
+    }
+    
 }

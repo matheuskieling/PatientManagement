@@ -9,4 +9,5 @@ public class Category
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();
     public required string Name { get; set; }
+    public required string Variant { get; set; }
 }
