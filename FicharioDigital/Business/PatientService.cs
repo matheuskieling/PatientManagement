@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace FicharioDigital.Business;
 
-public class PatientService(AppDbContext context, IPatientRepository repository, ICategoryRepository categoryRepository, IHealthPlanRepository healthPlanRepository) : IPatientService
+public class PatientService(IPatientRepository repository, ICategoryRepository categoryRepository, IHealthPlanRepository healthPlanRepository) : IPatientService
 {
     public async Task<PageableResponseDto<Patient>> ListAsync(ListPatientRequestDto request)
     {
@@ -57,6 +57,7 @@ public class PatientService(AppDbContext context, IPatientRepository repository,
     
     public async Task<Patient> UpdateAsync(PatientRequestDto request)
     {
+        var context = repository.GetDbContext();
         using var transaction = await context.Database.BeginTransactionAsync();
     
         try
@@ -107,10 +108,10 @@ public class PatientService(AppDbContext context, IPatientRepository repository,
                 .Where(c => c.PatientId == patient.Id)
                 .ToListAsync();
 
+            patient.Contacts.Clear();
             foreach (var contact in existingContacts)
             {
                 context.Contacts.Remove(contact);
-                patient.Contacts.Remove(contact);
             }
         
             // Add new contacts

@@ -1,6 +1,7 @@
 ﻿using FicharioDigital.Data.Repositories.Interfaces;
 using FicharioDigital.Model;
 using FicharioDigital.Model.DTO;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace FicharioDigital.Data.Repositories;
@@ -109,6 +110,11 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
             .Include(p => p.HealthPlan)
             .FirstOrDefaultAsync(p => p.Id == id);
         return patient;
+    }
+    
+    public AppDbContext GetDbContext()
+    {
+        return context;
     }
 
     public async Task<Patient?> FindPatientByCpfAsync(string cpf)

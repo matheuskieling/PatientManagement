@@ -14,6 +14,7 @@ public interface IPatientRepository
     Task<Patient?> FindPatientByFileNumberAsync(long fileNumber);
     Task<Patient?> FindPatientByIdAsync(Guid id);
     Task<Patient?> FindPatientByCpfAsync(string cpf);
+    AppDbContext GetDbContext();
     Task<List<Patient>> ListAllAsync();
     void RemoveContact(Contact contact);
 
