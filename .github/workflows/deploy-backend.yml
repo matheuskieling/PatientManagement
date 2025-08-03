@@ -15,8 +15,6 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no deploy@72.60.2.46 << 'EOF'
             # Criar diretório se não existir
-            mkdir -p ~/PatientManagement
-            cd ~/PatientManagement || exit 1
             # Remover pasta antiga se existir
             rm -rf PatientManagement || true
             # Clonar repositório via HTTPS para evitar problemas SSH
