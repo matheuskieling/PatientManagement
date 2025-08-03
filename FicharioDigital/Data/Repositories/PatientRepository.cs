@@ -68,6 +68,15 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
         };
     }
 
+    public void RemoveContact(Contact contact)
+    {
+        context.Contacts.Remove(contact);
+    }
+    public void ClearChangeTracker()
+    {
+        context.ChangeTracker.Clear();
+    }
+
     public async Task<Patient> CreateAsync(Patient patient)
     {
         await context.Patients.AddAsync(patient);
@@ -94,7 +103,11 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
 
     public async Task<Patient?> FindPatientByIdAsync(Guid id)
     {
-        var patient = await context.Patients.FirstOrDefaultAsync(p => p.Id == id);
+        var patient = await context.Patients
+            .Include(p => p.Contacts)
+            .Include(p => p.Category)
+            .Include(p => p.HealthPlan)
+            .FirstOrDefaultAsync(p => p.Id == id);
         return patient;
     }
 

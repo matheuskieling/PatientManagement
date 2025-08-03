@@ -16,11 +16,24 @@ namespace FicharioDigital.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Variant = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "HealthPlans",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_HealthPlans", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -44,11 +57,13 @@ namespace FicharioDigital.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     FileNumber = table.Column<long>(type: "bigint", nullable: true),
                     BirthDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    HealthPlan = table.Column<string>(type: "text", nullable: true),
+                    HealthPlanId = table.Column<Guid>(type: "uuid", nullable: true),
+                    HealthPlanNumber = table.Column<string>(type: "text", nullable: true),
+                    Gender = table.Column<int>(type: "integer", nullable: true),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Cpf = table.Column<string>(type: "text", nullable: true),
+                    Phone = table.Column<string>(type: "text", nullable: true),
                     Address = table.Column<string>(type: "text", nullable: true),
-                    Responsible = table.Column<string>(type: "text", nullable: true),
                     CategoryId = table.Column<Guid>(type: "uuid", nullable: true),
                     IsArchived = table.Column<bool>(type: "boolean", nullable: false)
                 },
@@ -60,10 +75,15 @@ namespace FicharioDigital.Migrations
                         column: x => x.CategoryId,
                         principalTable: "Categories",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Patients_HealthPlans_HealthPlanId",
+                        column: x => x.HealthPlanId,
+                        principalTable: "HealthPlans",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "Contact",
+                name: "Contacts",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -73,9 +93,9 @@ namespace FicharioDigital.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Contact", x => x.Id);
+                    table.PrimaryKey("PK_Contacts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Contact_Patients_PatientId",
+                        name: "FK_Contacts_Patients_PatientId",
                         column: x => x.PatientId,
                         principalTable: "Patients",
                         principalColumn: "Id",
@@ -89,9 +109,15 @@ namespace FicharioDigital.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Contact_PatientId",
-                table: "Contact",
+                name: "IX_Contacts_PatientId",
+                table: "Contacts",
                 column: "PatientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HealthPlans_Name",
+                table: "HealthPlans",
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Patients_CategoryId",
@@ -105,6 +131,11 @@ namespace FicharioDigital.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Patients_HealthPlanId",
+                table: "Patients",
+                column: "HealthPlanId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_Username",
                 table: "Users",
                 column: "Username",
@@ -115,7 +146,7 @@ namespace FicharioDigital.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Contact");
+                name: "Contacts");
 
             migrationBuilder.DropTable(
                 name: "Users");
@@ -125,6 +156,9 @@ namespace FicharioDigital.Migrations
 
             migrationBuilder.DropTable(
                 name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "HealthPlans");
         }
     }
 }

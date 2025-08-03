@@ -3,11 +3,12 @@ using FicharioDigital.Data.Repositories.Interfaces;
 using FicharioDigital.Model;
 using FicharioDigital.Model.DTO;
 using FicharioDigital.Model.Mapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace FicharioDigital.Business;
 
-public class PatientService(IPatientRepository repository, ICategoryRepository categoryRepository, IHealthPlanRepository healthPlanRepository) : IPatientService
+public class PatientService(AppDbContext context, IPatientRepository repository, ICategoryRepository categoryRepository, IHealthPlanRepository healthPlanRepository) : IPatientService
 {
     public async Task<PageableResponseDto<Patient>> ListAsync(ListPatientRequestDto request)
     {
@@ -42,47 +43,100 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
                 patient.Category = category;
             }
         }
+        
+        if (!string.IsNullOrEmpty(request.HealthPlanName))
+        {
+            var healthPlan = await healthPlanRepository.GetHealthPlanByName(request.HealthPlanName);
+            if (healthPlan != null)
+            {
+                patient.HealthPlan = healthPlan;
+            }
+        }
         return await repository.CreateAsync(patient);
     }
     
     public async Task<Patient> UpdateAsync(PatientRequestDto request)
     {
-        var patient = await repository.FindPatientByIdAsync(request.Id!.Value);
-        if (patient == null)
+        using var transaction = await context.Database.BeginTransactionAsync();
+    
+        try
         {
-            throw new KeyNotFoundException("Paciente não encontrado.");
-        }
-        patient.Name = request.Name;
-        patient.Cpf = request.Cpf;
-        patient.BirthDate = request.BirthDate;
-        patient.Address = request.Address;
-        patient.Phone = request.Phone;
-        patient.FileNumber = request.FileNumber;
-        if (!string.IsNullOrEmpty(request.HealthPlanName))
-        {
-            var healthPlan = await healthPlanRepository.GetHealthPlanByName(request.HealthPlanName);
-            patient.HealthPlan = healthPlan;
-        }
-        else
-        {
-            patient.HealthPlan = null;
-        }
+            var patient = await repository.FindPatientByIdAsync(request.Id!.Value);
+            if (patient == null)
+            {
+                throw new KeyNotFoundException("Paciente não encontrado.");
+            }
+
+            // Update patient properties
+            patient.Name = request.Name;
+            patient.Cpf = request.Cpf;
+            patient.BirthDate = request.BirthDate;
+            patient.Address = request.Address;
+            patient.Phone = request.Phone;
+            patient.FileNumber = request.FileNumber;
+
+            if (!string.IsNullOrEmpty(request.HealthPlanName))
+            {
+                var healthPlan = await healthPlanRepository.GetHealthPlanByName(request.HealthPlanName);
+                patient.HealthPlan = healthPlan;
+            }
+            else
+            {
+                patient.HealthPlan = null;
+            }
+
+            if (!string.IsNullOrEmpty(request.CategoryName))
+            {
+                var category = await categoryRepository.GetCategoryByName(request.CategoryName);
+                patient.Category = category;
+            }
+            else
+            {
+                patient.Category = null;
+            }
+
+            patient.HealthPlanNumber = request.HealthPlanNumber;
+            patient.Gender = request.Gender;
+            patient.IsArchived = request.IsArchived ?? false;
+
+            // Handle contacts - clear existing ones
+            repository.ClearChangeTracker(); // Clear any tracked changes
         
-        if (!string.IsNullOrEmpty(request.CategoryName))
-        {
-            var category = await categoryRepository.GetCategoryByName(request.CategoryName);
-            patient.Category = category;
+            // Remove all existing contacts for this patient
+            var existingContacts = await context.Contacts
+                .Where(c => c.PatientId == patient.Id)
+                .ToListAsync();
+
+            foreach (var contact in existingContacts)
+            {
+                context.Contacts.Remove(contact);
+                patient.Contacts.Remove(contact);
+            }
+        
+            // Add new contacts
+            if (request.Contacts.Any())
+            {
+                var newContacts = request.Contacts.Select(c => new Contact
+                {
+                    Name = c.Name,
+                    Phone = c.Phone,
+                    PatientId = patient.Id
+                }).ToList();
+            
+                await context.Contacts.AddRangeAsync(newContacts);
+                patient.Contacts.AddRange(newContacts);
+            }
+
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        
+            return patient;
         }
-        else
+        catch
         {
-            patient.Category = null;
+            await transaction.RollbackAsync();
+            throw;
         }
-        patient.HealthPlanNumber = request.HealthPlanNumber;
-        patient.Gender = request.Gender;
-        patient.Contacts = request.Contacts.Select(c => c.ToContact(patient.Id)).ToList();
-        patient.IsArchived = request.IsArchived ?? false;
-        await repository.SaveAsync();
-        return patient;
     }
 
     public async Task<long> GetNextPatientNumberAsync()

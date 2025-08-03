@@ -15,4 +15,7 @@ public interface IPatientRepository
     Task<Patient?> FindPatientByIdAsync(Guid id);
     Task<Patient?> FindPatientByCpfAsync(string cpf);
     Task<List<Patient>> ListAllAsync();
+    void RemoveContact(Contact contact);
+
+    void ClearChangeTracker();
 }

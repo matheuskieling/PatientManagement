@@ -17,7 +17,7 @@ public static class PatientMapper
             Gender = request.Gender,
             Phone = request.Phone,
         };
-        patient.Contacts = request.Contacts.Select(c => c.ToContact(patient.Id)).ToList();
+        patient.Contacts = (request.Contacts.Select(c => c.ToContact(patient.Id))).ToList();
         return patient;
     }
 }

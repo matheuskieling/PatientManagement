@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using FicharioDigital.Model.DTO;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,7 @@ public class Patient
     public DateTime? BirthDate { get; set; }
     public HealthPlan? HealthPlan { get; set; }
     public string? HealthPlanNumber { get; set; }
+    [JsonConverter(typeof(JsonStringEnumConverter<Gender>))]
     public Gender? Gender { get; set; }
     public string? Name { get; set; }
     public string? Cpf { get; set; }

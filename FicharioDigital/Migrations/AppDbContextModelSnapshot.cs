@@ -32,6 +32,10 @@ namespace FicharioDigital.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Variant")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
@@ -59,7 +63,25 @@ namespace FicharioDigital.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("Contact");
+                    b.ToTable("Contacts");
+                });
+
+            modelBuilder.Entity("FicharioDigital.Model.HealthPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("HealthPlans");
                 });
 
             modelBuilder.Entity("FicharioDigital.Model.Patient", b =>
@@ -83,7 +105,13 @@ namespace FicharioDigital.Migrations
                     b.Property<long?>("FileNumber")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("HealthPlan")
+                    b.Property<int?>("Gender")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("HealthPlanId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("HealthPlanNumber")
                         .HasColumnType("text");
 
                     b.Property<bool>("IsArchived")
@@ -92,7 +120,7 @@ namespace FicharioDigital.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<string>("Responsible")
+                    b.Property<string>("Phone")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -101,6 +129,8 @@ namespace FicharioDigital.Migrations
 
                     b.HasIndex("Cpf")
                         .IsUnique();
+
+                    b.HasIndex("HealthPlanId");
 
                     b.ToTable("Patients");
                 });
@@ -146,7 +176,13 @@ namespace FicharioDigital.Migrations
                         .WithMany()
                         .HasForeignKey("CategoryId");
 
+                    b.HasOne("FicharioDigital.Model.HealthPlan", "HealthPlan")
+                        .WithMany()
+                        .HasForeignKey("HealthPlanId");
+
                     b.Navigation("Category");
+
+                    b.Navigation("HealthPlan");
                 });
 
             modelBuilder.Entity("FicharioDigital.Model.Patient", b =>
