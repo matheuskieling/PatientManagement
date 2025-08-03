@@ -5,42 +5,34 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to VPS
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Setup .NET 8 SDK
+      - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0.x'
 
-#      - name: Run tests (optional)
-#        run: dotnet test ./PatientManagement/FicharioDigital
-
-      - name: Deploy via SSH
+      - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
           username: deploy
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
-          fingerprint: ${{ secrets.VPS_FINGERPRINT }}
+          # ignora completamente verificação do fingerprint
+          script_stop: true
           script: |
+            mkdir -p ~/.ssh
+            ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
             cd /home/deploy/PatientManagement/FicharioDigital
 
-            echo "🔄 Pulling latest changes from Git..."
             git pull origin main
 
-            echo "🐳 Starting PostgreSQL container..."
             docker-compose up -d
 
-            echo "🛑 Stopping any existing .NET app instance..."
             pkill -f PatientManagement || true
 
-            echo "🚀 Starting .NET backend in background..."
-            JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" \
-            CONNECTION_STRING="${{ secrets.CONNECTION_STRING }}" \
-            nohup dotnet run --urls "http://0.0.0.0:5000" > app.log 2>&1 &
+            JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" CONNECTION_STRING="${{ secrets.CONNECTION_STRING }}" nohup dotnet run --urls "http://0.0.0.0:5000" > app.log 2>&1 &
