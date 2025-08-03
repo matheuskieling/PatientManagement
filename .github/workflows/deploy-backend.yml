@@ -5,34 +5,42 @@ on:
 
 jobs:
   deploy:
+    name: Deploy to VPS
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
-      - name: Setup .NET
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup .NET 8 SDK
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0.x'
 
-#      - name: Run Tests
+#      - name: Run tests (optional)
 #        run: dotnet test ./PatientManagement/FicharioDigital
 
-      - name: Deploy to VPS via SSH
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
-          username: deploy                # ou deploy, o que você usa pra SSH
+          username: deploy
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
-          strict_host_key_checking: false  # aqui está o segredo para ignorar o erro
+          fingerprint: ${{ secrets.VPS_FINGERPRINT }}
           script: |
             cd /home/deploy/PatientManagement/FicharioDigital
-            
+
+            echo "🔄 Pulling latest changes from Git..."
             git pull origin main
-            
+
+            echo "🐳 Starting PostgreSQL container..."
             docker-compose up -d
-            
+
+            echo "🛑 Stopping any existing .NET app instance..."
             pkill -f PatientManagement || true
-            
-            # Executa sua app .NET em background com variáveis de ambiente na linha
-            JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" CONNECTION_STRING="${{ secrets.CONNECTION_STRING }}" nohup dotnet run --urls "http://0.0.0.0:5000" > app.log 2>&1 &
+
+            echo "🚀 Starting .NET backend in background..."
+            JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" \
+            CONNECTION_STRING="${{ secrets.CONNECTION_STRING }}" \
+            nohup dotnet run --urls "http://0.0.0.0:5000" > app.log 2>&1 &
