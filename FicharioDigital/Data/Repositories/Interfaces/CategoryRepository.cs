@@ -17,4 +17,9 @@ public class CategoryRepository(AppDbContext context) : ICategoryRepository
         await context.SaveChangesAsync();
         return category;
     }
+
+    public async Task<List<Category>> ListAsync()
+    {
+        return await context.Categories.ToListAsync();
+    }
 }

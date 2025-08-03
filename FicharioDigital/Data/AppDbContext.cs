@@ -11,7 +11,11 @@ public class AppDbContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            optionsBuilder.UseSqlite("Data Source=FicharioDigital.db; Cache=Shared");
+            var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+            optionsBuilder.UseNpgsql(connectionString
+                                     ?? throw new ArgumentNullException(nameof(connectionString),
+                                         "Connection string not found as variable")
+            );
         }
     }
     

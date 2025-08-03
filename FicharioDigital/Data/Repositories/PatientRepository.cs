@@ -84,6 +84,12 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
         var patient = await context.Patients.FirstOrDefaultAsync(p => p.FileNumber == fileNumber);
         return patient;
     }
+    
+    public async Task<Patient?> FindPatientByCpfAsync(string cpf)
+    {
+        var patient = await context.Patients.FirstOrDefaultAsync(p => p.Cpf == cpf);
+        return patient;
+    }
 
     public async Task<Patient?> ValidateAsync(string? name, string? cpf, long? fileNumber)
     {

@@ -16,6 +16,14 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
     public async Task<Patient> CreateAsync(PatientRequestDto request)
     {
         var patient = request.ToPatient();
+        if (patient.Cpf != null)
+        {
+            var previousPatientWithCpf = await repository.FindPatientByCpfAsync(patient.Cpf);
+            if (previousPatientWithCpf != null)
+            {
+                throw new InvalidOperationException("O CPF informado já está cadastrado. Por favor, verifique os dados e tente novamente.");
+            }
+        }
         if (request.FileNumber != null)
         {
             var previousPatientWithFileNumber = await repository.FindPatientByFileNumberAsync(request.FileNumber.Value);

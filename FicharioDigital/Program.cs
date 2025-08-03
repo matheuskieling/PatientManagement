@@ -12,10 +12,20 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.ConfigureSwaggerDocumentation();
 builder.Services.AddDependencies(builder.Configuration);
 builder.Services.ConfigureJwt(builder.Configuration);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins", policy =>
+    {
+        policy.AllowAnyOrigin() // Replace with your allowed origin(s)
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
 app.Migrate();
+app.UseCors("AllowSpecificOrigins");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

@@ -20,8 +20,20 @@ public class PatientController(IPatientService service) : ControllerBase
     [HttpPost("Create")]
     public async Task<IActionResult> CreatePatient(PatientRequestDto request)
     {
-        var patient = await service.CreateAsync(request);
-        return CreatedAtAction(nameof(CreatePatient), new { patient.Id }, patient);
+        try
+        {
+            var patient = await service.CreateAsync(request);
+            return CreatedAtAction(nameof(CreatePatient), new { patient.Id }, patient);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Patient conflict",
+                Detail = ex.Message,
+                Status = StatusCodes.Status409Conflict
+            });
+        }
     }
     
     [HttpPost("Validate")]

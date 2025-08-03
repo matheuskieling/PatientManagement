@@ -13,8 +13,8 @@ public static class DependencyInjection
     {
         services.AddDbContext<AppDbContext>(options =>
         {
-            var connectionString = configuration.GetConnectionString("Db");
-            options.UseSqlite(connectionString ?? throw new ArgumentNullException(nameof(connectionString), "Connection string 'DefaultConnection' not found."));
+            var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+            options.UseNpgsql(connectionString ?? throw new ArgumentNullException(nameof(connectionString), "Connection string 'DefaultConnection' not found."));
         });
         
         #region Services

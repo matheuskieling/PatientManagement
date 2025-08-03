@@ -13,4 +13,5 @@ public interface IPatientRepository
     Task<Patient?> ValidateAsync(string? name, string? cpf, long? fileNumber);
     
     Task<Patient?> FindPatientByFileNumberAsync(long fileNumber);
+    Task<Patient?> FindPatientByCpfAsync(string cpf);
 }
