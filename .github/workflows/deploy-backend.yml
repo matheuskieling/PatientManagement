@@ -29,7 +29,7 @@ jobs:
 
           # Remover a pasta antiga e clonar novamente
           rm -rf PatientManagement
-          git clone git@github.com:matheuskieling/PatientManagement.git
+          git clone https://github.com/matheuskieling/PatientManagement.git
           cd PatientManagement/FicharioDigital
 
           # Criar arquivo .env
