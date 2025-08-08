@@ -1,6 +1,7 @@
 ﻿using FicharioDigital.Data.Repositories.Interfaces;
 using FicharioDigital.Model;
 using FicharioDigital.Model.DTO;
+using FicharioDigital.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace FicharioDigital.Data.Repositories;
@@ -27,16 +28,17 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
                 p.HealthPlan != null && EF.Functions.Like(p.HealthPlan.Name, $"%{request.HealthPlan}%"));
 
         if (!string.IsNullOrEmpty(request.Name))
-            query = query.Where(p => EF.Functions.Like(p.Name, $"%{request.Name}%"));
+        {
+            var searchTerm = StringUtils.NormalizeString(request.Name);
+            var pattern = $"%{searchTerm}%";
+            query = query.Where(p => p.Name != null && EF.Functions.ILike(EF.Functions.Unaccent(p.Name), pattern));
+        }
 
         if (!string.IsNullOrEmpty(request.Cpf))
             query = query.Where(p => EF.Functions.Like(p.Cpf, $"%{request.Cpf}%"));
         
         if (!string.IsNullOrEmpty(request.Rg))
             query = query.Where(p => EF.Functions.Like(p.Rg, $"%{request.Rg}%"));
-
-        if (!string.IsNullOrEmpty(request.Address))
-            query = query.Where(p => EF.Functions.Like(p.Address, $"%{request.Address}%"));
 
         if (request.Gender.HasValue)
             query = query.Where(p => p.Gender != null && p.Gender == request.Gender);

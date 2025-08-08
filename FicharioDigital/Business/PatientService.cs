@@ -97,6 +97,7 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
             patient.Address = request.Address;
             patient.Phone = request.Phone;
             patient.FileNumber = request.FileNumber;
+            patient.FileNumberEco = request.FileNumberEco;
 
             if (!string.IsNullOrEmpty(request.HealthPlanName))
             {
@@ -121,8 +122,6 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
             patient.HealthPlanNumber = request.HealthPlanNumber;
             patient.Gender = request.Gender;
 
-            // Handle contacts - clear existing ones
-        
             // Remove all existing contacts for this patient
             var existingContacts = await context.Contacts
                 .Where(c => c.PatientId == patient.Id)
@@ -133,6 +132,8 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
             {
                 context.Contacts.Remove(contact);
             }
+
+            await context.SaveChangesAsync();
         
             // Add new contacts
             if (request.Contacts.Any())
@@ -144,8 +145,8 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
                     PatientId = patient.Id
                 }).ToList();
             
+                var contacts = context.Contacts.ToList();
                 await context.Contacts.AddRangeAsync(newContacts);
-                patient.Contacts.AddRange(newContacts);
             }
 
             await context.SaveChangesAsync();
