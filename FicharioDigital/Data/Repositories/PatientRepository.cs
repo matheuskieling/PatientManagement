@@ -1,7 +1,6 @@
 ﻿using FicharioDigital.Data.Repositories.Interfaces;
 using FicharioDigital.Model;
 using FicharioDigital.Model.DTO;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace FicharioDigital.Data.Repositories;
@@ -14,7 +13,10 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
             .AsQueryable();
 
         if (request.FileNumber.HasValue)
-            query = query.Where(p => EF.Functions.Like(p.FileNumber.ToString(), $"%{request.FileNumber}%"));
+            query = query.Where(p => p.FileNumber == request.FileNumber.Value);
+        
+        if (request.FileNumberEco.HasValue)
+            query = query.Where(p => p.FileNumberEco == request.FileNumberEco.Value);
 
         if (request.BirthDate.HasValue)
             query = query.Where(p =>
@@ -29,6 +31,9 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
 
         if (!string.IsNullOrEmpty(request.Cpf))
             query = query.Where(p => EF.Functions.Like(p.Cpf, $"%{request.Cpf}%"));
+        
+        if (!string.IsNullOrEmpty(request.Rg))
+            query = query.Where(p => EF.Functions.Like(p.Rg, $"%{request.Rg}%"));
 
         if (!string.IsNullOrEmpty(request.Address))
             query = query.Where(p => EF.Functions.Like(p.Address, $"%{request.Address}%"));
@@ -46,12 +51,9 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
         if (!string.IsNullOrEmpty(request.Category))
             query = query.Where(p => p.Category != null && EF.Functions.Like(p.Category.Name, $"%{request.Category}%"));
 
-        if (request.IsArchived != null)
-            query = query.Where(p => p.IsArchived == request.IsArchived.Value);
-
-        query = query.Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize);
-
         var totalResults = await query.CountAsync();
+
+        query = query.OrderBy(p => p.FileNumber);
 
         query = query.Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize);
 
@@ -101,6 +103,12 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
         var patient = await context.Patients.FirstOrDefaultAsync(p => p.FileNumber == fileNumber);
         return patient;
     }
+    
+    public async Task<Patient?> FindPatientByFileNumberEcoAsync(long fileNumberEco)
+    {
+        var patient = await context.Patients.FirstOrDefaultAsync(p => p.FileNumberEco == fileNumberEco);
+        return patient;
+    }
 
     public async Task<Patient?> FindPatientByIdAsync(Guid id)
     {
@@ -122,21 +130,56 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
         var patient = await context.Patients.FirstOrDefaultAsync(p => p.Cpf == cpf);
         return patient;
     }
-
-    public async Task<Patient?> ValidateAsync(string? name, string? cpf, long? fileNumber)
+    
+    public async Task<Patient?> FindPatientByRgAsync(string rg)
     {
-        var patient = await context.Patients.FirstOrDefaultAsync(p =>
-            p.IsArchived == false && (
-                (fileNumber.HasValue && p.FileNumber == fileNumber) ||
-                (!string.IsNullOrEmpty(name) && p.Name == name) ||
-                (!string.IsNullOrEmpty(cpf) && p.Cpf == cpf)
-            )
-        );
+        var patient = await context.Patients.FirstOrDefaultAsync(p => p.Rg == rg);
         return patient;
     }
 
-    public async Task<List<Patient>> ListAllAsync()
+    public async Task<List<Patient>> ValidateAsync(string? name, string? cpf, long? fileNumberEco, string? rg,
+        long? fileNumber)
     {
-        return await context.Patients.Where(p => p.FileNumber.HasValue).OrderBy(p => p.FileNumber).ToListAsync();
+        var patient = await context.Patients.Where(p =>
+            (fileNumber.HasValue && p.FileNumber == fileNumber) ||
+            (fileNumberEco.HasValue && p.FileNumberEco == fileNumberEco) ||
+            (!string.IsNullOrEmpty(name) && p.Name == name) ||
+            (!string.IsNullOrEmpty(cpf) && p.Cpf == cpf) ||
+            (!string.IsNullOrEmpty(rg) && p.Rg == rg)
+        ).ToListAsync();
+        return patient;
+    }
+
+    public async Task<List<long>> ListAllFileNumbersAsync()
+    {
+        return await context.Patients
+            .Where(p => p.FileNumber.HasValue)
+            .OrderBy(p => p.FileNumber)
+            .Select(p => p.FileNumber!.Value)
+            .ToListAsync();
+    }
+    
+    public async Task<List<long>> ListAllFileNumbersEcoAsync()
+    {
+        return await context.Patients
+            .Where(p => p.FileNumberEco.HasValue)
+            .OrderBy(p => p.FileNumberEco)
+            .Select(p => p.FileNumberEco!.Value)
+            .ToListAsync();
+    }
+
+    public async Task<List<Patient>> GetPatientsByCategoryId(Guid categoryId)
+    {
+        return await context.Patients.Include(p => p.Category).Where(p => p.Category != null && p.Category.Id == categoryId).ToListAsync();
+    }
+    
+    public async Task<List<Patient>> GetPatientsByHealthPlanId(Guid healthPlanId)
+    {
+        return await context.Patients.Include(p => p.HealthPlan).Where(p => p.HealthPlan != null && p.HealthPlan.Id == healthPlanId).ToListAsync();
+    }
+
+    public async Task<Patient?> GetPatientById(Guid id)
+    {
+        return await context.Patients.FirstOrDefaultAsync(p => p.Id == id);
     }
 }

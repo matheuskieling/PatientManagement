@@ -2,10 +2,12 @@
 
 public record ListPatientRequestDto(
      long? FileNumber,
+     long? FileNumberEco,
      DateTime? BirthDate,
      string? HealthPlan,
      string? Name,
      string? Cpf,
+     string? Rg,
      Gender? Gender,
      string? Address,
      string? Phones,

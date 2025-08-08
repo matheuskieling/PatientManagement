@@ -1,4 +1,5 @@
-﻿using FicharioDigital.Data.Repositories.Interfaces;
+﻿using FicharioDigital.Business.Interfaces;
+using FicharioDigital.Data.Repositories.Interfaces;
 using FicharioDigital.Model;
 using FicharioDigital.Model.DTO;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +10,7 @@ namespace FicharioDigital.Controllers;
 [ApiController]
 [Authorize]
 [Route("[controller]")]
-public class HealthPlanController(IHealthPlanRepository repository) : ControllerBase
+public class HealthPlanController(IHealthPlanRepository repository, IPatientService patientService) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> List()
@@ -71,10 +72,26 @@ public class HealthPlanController(IHealthPlanRepository repository) : Controller
         return Ok(healthPlan);
     }
     
-    [HttpPost("Delete")]
-    public async Task<IActionResult> Delete(Guid id)
+    [HttpPost("VerifyDelete")]
+    public async Task<IActionResult> VerifyDelete(HealthPlanDeleteRequestDto request)
     {
-        if (id == Guid.Empty)
+        if (request.Id == Guid.Empty)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid healthPlan id",
+                Detail = "HealthPlan id cannot be null.",
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+        var count = await patientService.GetHealthPlanRemoveCount(request.Id);
+        return Ok(count);
+    }
+    
+    [HttpPost("Delete")]
+    public async Task<IActionResult> Delete(HealthPlanDeleteRequestDto request)
+    {
+        if (request.Id == Guid.Empty)
         {
             return BadRequest(new ProblemDetails
             {
@@ -84,7 +101,7 @@ public class HealthPlanController(IHealthPlanRepository repository) : Controller
             });
         }
         
-        var healthPlan = await repository.GetHealthPlanById(id);
+        var healthPlan = await repository.GetHealthPlanById(request.Id);
         if (healthPlan == null)
         {
             return NotFound(new ProblemDetails
@@ -94,6 +111,8 @@ public class HealthPlanController(IHealthPlanRepository repository) : Controller
                 Status = StatusCodes.Status404NotFound
             });
         }
+
+        await patientService.RemoveHealthPlanFromPatientsAsync(healthPlan.Id);
         
         await repository.DeleteAsync(healthPlan);
         return NoContent();

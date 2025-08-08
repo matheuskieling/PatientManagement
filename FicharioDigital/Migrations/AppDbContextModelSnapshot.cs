@@ -105,6 +105,9 @@ namespace FicharioDigital.Migrations
                     b.Property<long?>("FileNumber")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("FileNumberEco")
+                        .HasColumnType("bigint");
+
                     b.Property<int?>("Gender")
                         .HasColumnType("integer");
 
@@ -114,13 +117,13 @@ namespace FicharioDigital.Migrations
                     b.Property<string>("HealthPlanNumber")
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsArchived")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
                     b.Property<string>("Phone")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Rg")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -131,6 +134,9 @@ namespace FicharioDigital.Migrations
                         .IsUnique();
 
                     b.HasIndex("HealthPlanId");
+
+                    b.HasIndex("Rg")
+                        .IsUnique();
 
                     b.ToTable("Patients");
                 });

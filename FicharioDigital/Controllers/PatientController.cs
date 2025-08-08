@@ -16,6 +16,54 @@ public class PatientController(IPatientService service) : ControllerBase
         var patients = await service.ListAsync(request);
         return Ok(patients);
     }
+    
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var patient = await service.GetPatientById(id);
+        if (patient == null)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Patient not Found",
+                Detail = $"No patient found with ID {id}",
+                Status = StatusCodes.Status404NotFound,
+            });
+        }
+        return Ok(patient);
+    }
+    
+    [HttpGet("Cpf/{cpf}")]
+    public async Task<IActionResult> GetByCpf(string cpf)
+    {
+        var patient = await service.GetPatientByCpf(cpf);
+        if (patient == null)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Patient not Found",
+                Detail = $"No patient found with cpf {cpf}",
+                Status = StatusCodes.Status404NotFound,
+            });
+        }
+        return Ok(patient);
+    }
+    
+    [HttpGet("Rg/{rg}")]
+    public async Task<IActionResult> GetByRg(string rg)
+    {
+        var patient = await service.GetPatientByRg(rg);
+        if (patient == null)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Patient not Found",
+                Detail = $"No patient found with rg {rg}",
+                Status = StatusCodes.Status404NotFound,
+            });
+        }
+        return Ok(patient);
+    }
 
     [HttpPost("Update")]
     public async Task<IActionResult> UpdatePatient(PatientRequestDto request)
@@ -24,25 +72,6 @@ public class PatientController(IPatientService service) : ControllerBase
         {
             var patient = await service.UpdateAsync(request);
             return Ok(patient);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new ProblemDetails
-            {
-                Title = "Patient not Found",
-                Detail = ex.Message,
-                Status = StatusCodes.Status404NotFound,
-            });
-        }
-    }
-    
-    [HttpPost("Archive/{id}")]
-    public async Task<IActionResult> ArchivePatient(Guid id)
-    {
-        try
-        {
-            await service.ArchiveAsync(id);
-            return NoContent();
         }
         catch (KeyNotFoundException ex)
         {
@@ -105,7 +134,7 @@ public class PatientController(IPatientService service) : ControllerBase
     public async Task<IActionResult> GetNextPatientNumber()
     {
         var nextNumber = await service.GetNextPatientNumberAsync();
-        return Ok(new { FileNumber = nextNumber});
+        return Ok(nextNumber);
     }
     
 }

@@ -9,10 +9,12 @@ public static class PatientMapper
         var patient =  new Patient
         {
             FileNumber = request.FileNumber,
+            FileNumberEco = request.FileNumberEco,
             BirthDate = request.BirthDate,
             HealthPlanNumber = request.HealthPlanNumber,
             Name = request.Name,
             Cpf = request.Cpf,
+            Rg = request.Rg,
             Address = request.Address,
             Gender = request.Gender,
             Phone = request.Phone,

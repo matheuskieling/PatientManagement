@@ -26,15 +26,36 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
                 throw new InvalidOperationException("O CPF informado já está cadastrado. Por favor, verifique os dados e tente novamente.");
             }
         }
+        
+        if (patient.Rg != null)
+        {
+            var previousPatientWithCpf = await repository.FindPatientByRgAsync(patient.Rg);
+            if (previousPatientWithCpf != null)
+            {
+                throw new InvalidOperationException("O RG informado já está cadastrado. Por favor, verifique os dados e tente novamente.");
+            }
+        }
+        
         if (request.FileNumber != null)
         {
             var previousPatientWithFileNumber = await repository.FindPatientByFileNumberAsync(request.FileNumber.Value);
             if (previousPatientWithFileNumber != null)
             {
-                previousPatientWithFileNumber.IsArchived = true;
+                previousPatientWithFileNumber.FileNumber = null;
                 await repository.SaveAsync();
             }
         }
+        
+        if (request.FileNumberEco != null)
+        {
+            var previousPatientWithFileNumberEco = await repository.FindPatientByFileNumberEcoAsync(request.FileNumberEco.Value);
+            if (previousPatientWithFileNumberEco != null)
+            {
+                previousPatientWithFileNumberEco.FileNumberEco = null;
+                await repository.SaveAsync();
+            }
+        }
+        
         if (!string.IsNullOrEmpty(request.CategoryName))
         {
             var category = await categoryRepository.GetCategoryByName(request.CategoryName);
@@ -71,6 +92,7 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
             // Update patient properties
             patient.Name = request.Name;
             patient.Cpf = request.Cpf;
+            patient.Rg = request.Rg;
             patient.BirthDate = request.BirthDate;
             patient.Address = request.Address;
             patient.Phone = request.Phone;
@@ -98,10 +120,8 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
 
             patient.HealthPlanNumber = request.HealthPlanNumber;
             patient.Gender = request.Gender;
-            patient.IsArchived = request.IsArchived ?? false;
 
             // Handle contacts - clear existing ones
-            repository.ClearChangeTracker(); // Clear any tracked changes
         
             // Remove all existing contacts for this patient
             var existingContacts = await context.Contacts
@@ -140,53 +160,117 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
         }
     }
 
-    public async Task<long> GetNextPatientNumberAsync()
+    public async Task<Patient?> GetPatientByCpf(string cpf)
     {
-        var patients = await repository.ListAllAsync();
+        return await repository.FindPatientByCpfAsync(cpf);
+    }
+    public async Task<Patient?> GetPatientByRg(string rg)
+    {
+        return await repository.FindPatientByRgAsync(rg);
+    }
+
+    public async Task<NextFileNumbersResponse> GetNextPatientNumberAsync()
+    {
+        var fileNumbers = await repository.ListAllFileNumbersAsync();
+        var fileNumbersEco = await repository.ListAllFileNumbersEcoAsync();
         var index = 1;
-        if (patients.IsNullOrEmpty())
+        var nextFileNumber = 1;
+        var nextFileNumberEco = 1;
+        if (!fileNumbers.IsNullOrEmpty())
         {
-            return 1;
-        }
-        foreach (var fileNumber in patients.Select(p => p.FileNumber))
-        {
-            if (fileNumber != index)
+            foreach (var fileNumber in fileNumbers)
             {
-                return index;
+                if (fileNumber != index)
+                {
+                    nextFileNumber = index;
+                    break;
+                }
+                index++;
             }
-            index++;
+            nextFileNumber = index;
+        }
+        index = 1;
+        if (!fileNumbersEco.IsNullOrEmpty())
+        {
+            foreach (var fileNumber in fileNumbersEco)
+            {
+                if (fileNumber != index)
+                {
+                    nextFileNumberEco = index;
+                    break;
+                }
+                index++;
+            }
+
+            nextFileNumberEco = index;
         }
 
-        return index;
+        return new NextFileNumbersResponse
+        {
+            FileNumber = nextFileNumber,
+            FileNumberEco = nextFileNumberEco,
+        };
     }
 
     public async Task<ValidationResults> ValidateAsync(PatientRequestDto request)
     {
         var validationResults = new ValidationResults();
-        var foundPatient = await repository.ValidateAsync(request.Name, request.Cpf, request.FileNumber);
-        if (foundPatient is null) return validationResults;
+        var foundPatients = await repository.ValidateAsync(request.Name, request.Cpf, request.FileNumberEco, request.Rg, request.FileNumber);
+        if (foundPatients.IsNullOrEmpty()) return validationResults;
         
-        if (foundPatient.Name == request.Name)
+        if (request.Name != null && foundPatients.Any(p => p.Name == request.Name))
         {
-            validationResults.Name.IsValid = false;
-            var birthDate = foundPatient.BirthDate?.Date;
-            validationResults.Name.ErrorMessage = $"Já existe um paciente cadastrado com o mesmo nome";
-            if (birthDate != null)
+            var patient = foundPatients.FirstOrDefault(p => p.Name == request.Name);
+            var isSamePatient = request.Id != null && patient!.Id == request.Id;
+            if (!isSamePatient)
             {
-                validationResults.Name.ErrorMessage += $" e data de nascimento {birthDate.Value:dd/MM/yyyy}";
+                validationResults.Name.IsValid = false;
+                validationResults.Name.ErrorMessage = $"Já existe um paciente cadastrado com o mesmo nome";
             }
         }
         
-        if (foundPatient.Cpf == request.Cpf)
+        if (request.Cpf != null && foundPatients.Any(p => p.Cpf == request.Cpf))
         {
-            validationResults.Cpf.IsValid = false;
-            validationResults.Cpf.ErrorMessage = $"Não é possível criar o paciente pois o CPF já está cadastrado sob o nome de {foundPatient.Name}";
+            var patient = foundPatients.FirstOrDefault(p => p.Cpf == request.Cpf);
+            var isSamePatient = request.Id != null && patient!.Id == request.Id;
+            if (!isSamePatient)
+            {
+                validationResults.Cpf.IsValid = false;
+                validationResults.Cpf.ErrorMessage = $"Não é possível criar o paciente pois o CPF já está cadastrado sob o nome de {patient!.Name}";
+            }
         }
         
-        if (foundPatient.FileNumber == request.FileNumber)
+        if (request.Rg != null && foundPatients.Any(p => p.Rg == request.Rg))
         {
-            validationResults.FileNumber.IsValid = false;
-            validationResults.FileNumber.ErrorMessage = $"Já existe um paciente cadastrado com a mesma ficha. Continuar com a ação irá arquivar o paciente {foundPatient.Name}";
+            var patient = foundPatients.FirstOrDefault(p => p.Rg == request.Rg);
+            var isSamePatient = request.Id != null && patient!.Id == request.Id;
+            if (!isSamePatient)
+            {
+                validationResults.Rg.IsValid = false;
+                validationResults.Rg.ErrorMessage = $"Não é possível criar o paciente pois o RG já está cadastrado sob o nome de {patient!.Rg}";
+            }
+        }
+        
+        if (request.FileNumber != null && foundPatients.Any(p => p.FileNumber == request.FileNumber))
+        {
+            var patient = foundPatients.FirstOrDefault(p => p.FileNumber == request.FileNumber);
+            var isSamePatient = request.Id != null && patient!.Id == request.Id;
+            if (!isSamePatient)
+            {
+                validationResults.FileNumber.IsValid = false;
+                validationResults.FileNumber.ErrorMessage = $"Já existe um paciente cadastrado com a mesma ficha de consulta. Continuar com a ação irá remover o número da ficha  do paciente {patient!.Name}";
+            }
+        }
+        
+        if (request.FileNumberEco != null && foundPatients.Any(p => p.FileNumberEco == request.FileNumberEco))
+        {
+            var patient = foundPatients.FirstOrDefault(p => p.FileNumberEco == request.FileNumberEco);
+            var isSamePatient = request.Id != null && patient!.Id == request.Id;
+            if (!isSamePatient)
+            {
+                validationResults.FileNumberEco.IsValid = false;
+                validationResults.FileNumberEco.ErrorMessage = $"Já existe um paciente cadastrado com a mesma ficha de ecografia. Continuar com a ação irá remover o número da ficha de ecografia do paciente {patient!.Name}";
+            }
         }
         
         return validationResults;
@@ -201,16 +285,55 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
         }
         await repository.DeleteAsync(patient);
     }
-    
-    public async Task ArchiveAsync(Guid id) 
+
+    public async Task<long> GetCategoryRemoveCount(Guid categoryId)
     {
-        var patient = await repository.FindPatientByIdAsync(id);
-        if (patient == null)
+        var patients = await repository.GetPatientsByCategoryId(categoryId);
+        return patients.Count();
+    }
+
+    public async Task<long> RemoveCategoryFromPatientsAsync(Guid categoryId)
+    {
+        var patients = await repository.GetPatientsByCategoryId(categoryId);
+        if (patients.IsNullOrEmpty())
         {
-            throw new KeyNotFoundException("Paciente não encontrado.");
+            return 0;
         }
-        patient.IsArchived = true;
+
+        foreach (var patient in patients)
+        {
+            patient.Category = null;
+        }
+
         await repository.SaveAsync();
+        return patients.Count();
+    }
+
+    public async Task<Patient?> GetPatientById(Guid id)
+    {
+        return await repository.GetPatientById(id);
     }
     
+    public async Task<long> GetHealthPlanRemoveCount(Guid healthPlanId)
+    {
+        var patients = await repository.GetPatientsByHealthPlanId(healthPlanId);
+        return patients.Count();
+    }
+
+    public async Task<long> RemoveHealthPlanFromPatientsAsync(Guid healthPlanId)
+    {
+        var patients = await repository.GetPatientsByHealthPlanId(healthPlanId);
+        if (patients.IsNullOrEmpty())
+        {
+            return 0;
+        }
+
+        foreach (var patient in patients)
+        {
+            patient.HealthPlan = null;
+        }
+
+        await repository.SaveAsync();
+        return patients.Count();
+    }
 }

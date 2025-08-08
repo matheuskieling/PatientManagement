@@ -1,4 +1,6 @@
-﻿using FicharioDigital.Data.Repositories.Interfaces;
+﻿using FicharioDigital.Business;
+using FicharioDigital.Business.Interfaces;
+using FicharioDigital.Data.Repositories.Interfaces;
 using FicharioDigital.Model;
 using FicharioDigital.Model.DTO;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +11,7 @@ namespace FicharioDigital.Controllers;
 [ApiController]
 [Authorize]
 [Route("[controller]")]
-public class CategoryController(ICategoryRepository repository) : ControllerBase
+public class CategoryController(ICategoryRepository repository, IPatientService patientService) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> List()
@@ -91,10 +93,26 @@ public class CategoryController(ICategoryRepository repository) : ControllerBase
         return Ok(category);
     }
     
-    [HttpPost("Delete")]
-    public async Task<IActionResult> Delete(Guid id)
+    [HttpPost("VerifyDelete")]
+    public async Task<IActionResult> VerifyDelete(CategoryDeleteRequestDto request)
     {
-        if (id == Guid.Empty)
+        if (request.Id == Guid.Empty)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid category id",
+                Detail = "Category id cannot be null.",
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+        var count = await patientService.GetCategoryRemoveCount(request.Id);
+        return Ok(count);
+    }
+    
+    [HttpPost("Delete")]
+    public async Task<IActionResult> Delete(CategoryDeleteRequestDto request)
+    {
+        if (request.Id == Guid.Empty)
         {
             return BadRequest(new ProblemDetails
             {
@@ -104,7 +122,7 @@ public class CategoryController(ICategoryRepository repository) : ControllerBase
             });
         }
         
-        var category = await repository.GetCategoryById(id);
+        var category = await repository.GetCategoryById(request.Id);
         if (category == null)
         {
             return NotFound(new ProblemDetails
@@ -114,6 +132,8 @@ public class CategoryController(ICategoryRepository repository) : ControllerBase
                 Status = StatusCodes.Status404NotFound
             });
         }
+
+        await patientService.RemoveCategoryFromPatientsAsync(category.Id);
         
         await repository.DeleteAsync(category);
         return NoContent();

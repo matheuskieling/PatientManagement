@@ -56,6 +56,7 @@ namespace FicharioDigital.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     FileNumber = table.Column<long>(type: "bigint", nullable: true),
+                    FileNumberEco = table.Column<long>(type: "bigint", nullable: true),
                     BirthDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     HealthPlanId = table.Column<Guid>(type: "uuid", nullable: true),
                     HealthPlanNumber = table.Column<string>(type: "text", nullable: true),
@@ -64,8 +65,8 @@ namespace FicharioDigital.Migrations
                     Cpf = table.Column<string>(type: "text", nullable: true),
                     Phone = table.Column<string>(type: "text", nullable: true),
                     Address = table.Column<string>(type: "text", nullable: true),
-                    CategoryId = table.Column<Guid>(type: "uuid", nullable: true),
-                    IsArchived = table.Column<bool>(type: "boolean", nullable: false)
+                    Rg = table.Column<string>(type: "text", nullable: true),
+                    CategoryId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -134,6 +135,12 @@ namespace FicharioDigital.Migrations
                 name: "IX_Patients_HealthPlanId",
                 table: "Patients",
                 column: "HealthPlanId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Patients_Rg",
+                table: "Patients",
+                column: "Rg",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Username",
