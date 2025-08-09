@@ -1,6 +1,6 @@
 ﻿namespace FicharioDigital.Model.DTO;
 
 public record ContactRequestDto(
-    string Name,
+    string? Name,
     string? Phone
 );
