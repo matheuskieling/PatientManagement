@@ -22,7 +22,7 @@
     "Prod": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "applicationUrl": "https://fetaledigital.com.br:5000",
+      "applicationUrl": "http://fetaledigital.com.br:5000",
       "launchBrowser": false,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production"
