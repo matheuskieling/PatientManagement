@@ -10,7 +10,7 @@ namespace FicharioDigital.Controllers;
 
 [ApiController]
 [Authorize]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class CategoryController(ICategoryRepository repository, IPatientService patientService) : ControllerBase
 {
     [HttpGet]

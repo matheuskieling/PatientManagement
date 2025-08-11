@@ -42,6 +42,6 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers().WithMetadata(new RouteAttribute("api/[controller]"));
+app.MapControllers();
 
 app.Run();

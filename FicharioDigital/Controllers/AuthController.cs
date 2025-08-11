@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FicharioDigital.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class AuthController(IUserService service) : ControllerBase
 {
     [HttpPost("Register")]

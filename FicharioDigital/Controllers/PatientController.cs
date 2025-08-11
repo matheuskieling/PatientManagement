@@ -7,7 +7,7 @@ namespace FicharioDigital.Controllers;
 
 [ApiController]
 [Authorize]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class PatientController(IPatientService service) : ControllerBase
 {
     [HttpGet("List")]

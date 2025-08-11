@@ -9,7 +9,7 @@ namespace FicharioDigital.Controllers;
 
 [ApiController]
 [Authorize]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class HealthPlanController(IHealthPlanRepository repository, IPatientService patientService) : ControllerBase
 {
     [HttpGet]
