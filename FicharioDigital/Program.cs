@@ -1,5 +1,6 @@
 using DotNetEnv;
 using FicharioDigital.Infrastructure;
+using Microsoft.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,6 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllers().WithMetadata(new RouteAttribute("api/[controller]"));
 
 app.Run();
