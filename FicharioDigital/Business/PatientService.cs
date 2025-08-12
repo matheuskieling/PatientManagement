@@ -96,7 +96,25 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
             patient.BirthDate = request.BirthDate;
             patient.Address = request.Address;
             patient.Phone = request.Phone;
+
+            if (request.FileNumber.HasValue)
+            {
+                var existingPatient = await repository.FindPatientByFileNumberAsync(request.FileNumber.Value);
+                if (existingPatient != null)
+                {
+                    existingPatient.FileNumber = null;
+                }
+            }
             patient.FileNumber = request.FileNumber;
+            
+            if (request.FileNumberEco.HasValue)
+            {
+                var existingPatient = await repository.FindPatientByFileNumberEcoAsync(request.FileNumberEco.Value);
+                if (existingPatient != null)
+                {
+                    existingPatient.FileNumberEco = null;
+                }
+            }
             patient.FileNumberEco = request.FileNumberEco;
 
             if (!string.IsNullOrEmpty(request.HealthPlanName))
