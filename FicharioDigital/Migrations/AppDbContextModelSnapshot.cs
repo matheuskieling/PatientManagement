@@ -90,14 +90,14 @@ namespace FicharioDigital.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Address")
-                        .HasColumnType("text");
-
                     b.Property<DateTime?>("BirthDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("CategoryId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("City")
+                        .HasColumnType("text");
 
                     b.Property<string>("Cpf")
                         .HasColumnType("text");
@@ -124,6 +124,9 @@ namespace FicharioDigital.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Rg")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Street")
                         .HasColumnType("text");
 
                     b.HasKey("Id");

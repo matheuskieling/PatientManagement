@@ -94,7 +94,8 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
             patient.Cpf = request.Cpf;
             patient.Rg = request.Rg;
             patient.BirthDate = request.BirthDate;
-            patient.Address = request.Address;
+            patient.Street = request.Street;
+            patient.City = request.City;
             patient.Phone = request.Phone;
 
             if (request.FileNumber.HasValue)

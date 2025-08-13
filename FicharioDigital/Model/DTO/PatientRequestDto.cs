@@ -16,7 +16,8 @@ public class PatientRequestDto
      public string? Cpf { get; set; } 
      public string? Rg { get; set; } 
      public string? Phone { get; set; } 
-     public string? Address { get; set; }
+     public string? Street { get; set; }
+     public string? City { get; set; }
      public List<ContactRequestDto> Contacts { get; set; } = [];
      public string? CategoryName { get; set; } 
      public bool? IsArchived { get; set; }

@@ -2,6 +2,7 @@
 using FicharioDigital.Model.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileProviders;
 
 namespace FicharioDigital.Controllers;
 

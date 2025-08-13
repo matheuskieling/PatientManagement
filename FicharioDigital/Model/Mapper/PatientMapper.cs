@@ -15,7 +15,8 @@ public static class PatientMapper
             Name = request.Name,
             Cpf = request.Cpf,
             Rg = request.Rg,
-            Address = request.Address,
+            Street = request.Street,
+            City = request.City,
             Gender = request.Gender,
             Phone = request.Phone,
         };

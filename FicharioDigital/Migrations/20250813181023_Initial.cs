@@ -64,7 +64,8 @@ namespace FicharioDigital.Migrations
                     Name = table.Column<string>(type: "text", nullable: true),
                     Cpf = table.Column<string>(type: "text", nullable: true),
                     Phone = table.Column<string>(type: "text", nullable: true),
-                    Address = table.Column<string>(type: "text", nullable: true),
+                    Street = table.Column<string>(type: "text", nullable: true),
+                    City = table.Column<string>(type: "text", nullable: true),
                     Rg = table.Column<string>(type: "text", nullable: true),
                     CategoryId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
