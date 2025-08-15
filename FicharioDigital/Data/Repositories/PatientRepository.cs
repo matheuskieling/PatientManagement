@@ -182,6 +182,10 @@ public class PatientRepository(AppDbContext context) : IPatientRepository
 
     public async Task<Patient?> GetPatientById(Guid id)
     {
-        return await context.Patients.FirstOrDefaultAsync(p => p.Id == id);
+        return await context.Patients
+            .Include(p => p.HealthPlan)
+            .Include(p => p.Contacts)
+            .Include(p => p.Category)
+            .FirstOrDefaultAsync(p => p.Id == id);
     }
 }

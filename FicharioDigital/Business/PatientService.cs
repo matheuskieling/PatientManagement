@@ -73,7 +73,8 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
                 patient.HealthPlan = healthPlan;
             }
         }
-        return await repository.CreateAsync(patient);
+        var result = await repository.CreateAsync(patient);
+        return result;
     }
     
     public async Task<Patient> UpdateAsync(PatientRequestDto request)
