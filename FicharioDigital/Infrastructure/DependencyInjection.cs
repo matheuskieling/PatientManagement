@@ -21,6 +21,8 @@ public static class DependencyInjection
         services.AddScoped<IPatientService, PatientService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IDoctorService, DoctorService>();
+        services.AddScoped<IPaymentService, PaymentService>();
         #endregion
         
         #region Repositories
@@ -28,6 +30,8 @@ public static class DependencyInjection
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IHealthPlanRepository, HealthPlanRepository>();
+        services.AddScoped<IDoctorRepository, DoctorRepository>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
         #endregion
     }
 }
