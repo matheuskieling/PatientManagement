@@ -36,7 +36,7 @@ public class PaymentService(IPaymentRepository repository,
         {
             var patient = await patientRepository.GetPatientById(paymentRequestDto.PatientId.Value);
             if (patient is null)
-                throw new KeyNotFoundException("Convênio não encontrado");
+                throw new KeyNotFoundException("Paciente não encontrado");
             payment.Patient = patient;
         }
         
@@ -57,8 +57,8 @@ public class PaymentService(IPaymentRepository repository,
             payment.Description = requestDto.Description;
         }
         if (requestDto.HealthPlanId.HasValue
-            && (payment.HealthPlan != null && payment.HealthPlan.Id != requestDto.HealthPlanId)
-            || payment.HealthPlan == null
+            && ((payment.HealthPlan != null && payment.HealthPlan.Id != requestDto.HealthPlanId)
+            || payment.HealthPlan == null)
          )
         {
             var healthPlan = await healthPlanRepository.GetHealthPlanById(requestDto.HealthPlanId!.Value);
@@ -67,19 +67,19 @@ public class PaymentService(IPaymentRepository repository,
             payment.HealthPlan = healthPlan;
         }
         if (requestDto.PatientId.HasValue
-            && (payment.Patient != null && payment.Patient.Id != requestDto.PatientId)
-            || payment.Patient == null
+            && ((payment.Patient != null && payment.Patient.Id != requestDto.PatientId)
+            || payment.Patient == null)
          )
         {
             var patient = await patientRepository.GetPatientById(requestDto.PatientId!.Value);
             if (patient == null)
-                throw new KeyNotFoundException("Convênio não encontrado");
+                throw new KeyNotFoundException("Paciente não encontrado");
             payment.Patient = patient;
         }
         
         if (requestDto.DoctorId.HasValue
-            && (payment.Doctor != null && payment.Doctor.Id != requestDto.DoctorId)
-            || payment.Doctor == null
+            && ((payment.Doctor != null && payment.Doctor.Id != requestDto.DoctorId)
+            || payment.Doctor == null)
          )
         {
             var doctor = await doctorRepository.GetDoctorById(requestDto.DoctorId!.Value);

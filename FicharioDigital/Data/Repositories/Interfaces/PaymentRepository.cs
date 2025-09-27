@@ -19,14 +19,15 @@ public class PaymentRepository(AppDbContext context) : IPaymentRepository
     public async Task<List<Payment>> ListAsync(PaymentListingRequestDto request)
     {
         if (!request.StartDate.HasValue)
-            request = request with { StartDate = DateTime.Today };
+            request = request with { StartDate = DateTime.UtcNow.Date };
         
         if (!request.EndDate.HasValue)
-            request = request with { EndDate = DateTime.Today.AddDays(1) };
+            request = request with { EndDate = DateTime.UtcNow.Date.AddDays(1) };
         
-        if (!request.PaymentMethods.IsNullOrEmpty())
+        if (request.PaymentMethods.IsNullOrEmpty())
             request = request with { PaymentMethods = [ PaymentMethod.Cash ] };
-            
+        
+        var paymentMethodIds = request.PaymentMethods.Select(pm => (int)pm).ToList();
         
         var query = context.Payments
             .Include(p => p.HealthPlan)
@@ -37,10 +38,12 @@ public class PaymentRepository(AppDbContext context) : IPaymentRepository
         if (request.DoctorId.HasValue)
             query = query.Where(p => p.Doctor != null && p.Doctor.Id == request.DoctorId);
         
-        query = query.Where(p => request.PaymentMethods.Contains(p.PaymentMethod));
+        query = query.Where(p => paymentMethodIds.Contains((int)p.PaymentMethod));
         query = query.Where(p => p.Date >= request.StartDate && p.Date < request.EndDate);
         query = query.OrderBy(p => p.Date);
         
+        var sql = query.ToQueryString();
+        Console.WriteLine(sql);
         return await query.ToListAsync();
     }
 
@@ -57,6 +60,10 @@ public class PaymentRepository(AppDbContext context) : IPaymentRepository
 
     public async Task<Payment?> GetPaymentById(Guid id)
     {
-        return await context.Payments.FirstOrDefaultAsync(p => p.Id == id);
+        return await context.Payments
+            .Include(p => p.Doctor)
+            .Include(p => p.HealthPlan)
+            .Include(p => p.Patient)
+            .FirstOrDefaultAsync(p => p.Id == id);
     }
 }
