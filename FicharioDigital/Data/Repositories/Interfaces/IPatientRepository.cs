@@ -6,6 +6,7 @@ namespace FicharioDigital.Data.Repositories.Interfaces;
 public interface IPatientRepository
 {
     Task<PageableResponseDto<Patient>> ListAsync(ListPatientRequestDto request);
+    Task<List<Patient>> SearchAsync(string name);
     Task<Patient> CreateAsync(Patient patient);
     Task DeleteAsync(Patient patient);
     Task SaveAsync();

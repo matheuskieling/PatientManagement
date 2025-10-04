@@ -3,6 +3,7 @@ using FicharioDigital.Data.Repositories.Interfaces;
 using FicharioDigital.Model;
 using FicharioDigital.Model.DTO;
 using FicharioDigital.Model.Mapper;
+using Microsoft.IdentityModel.Tokens;
 
 namespace FicharioDigital.Business;
 
@@ -112,5 +113,56 @@ public class PaymentService(IPaymentRepository repository,
         if (payment is null)
             throw new KeyNotFoundException("Pagamento não encontrado");
         await repository.DeleteAsync(payment);
+        
+    }
+    
+    public async Task<long> RemoveHealthPlanFromPaymentsAsync(Guid healthPlanId)
+    {
+        var patients = await repository.GetPaymentsByHealthPlan(healthPlanId);
+        if (patients.IsNullOrEmpty())
+        {
+            return 0;
+        }
+
+        foreach (var patient in patients)
+        {
+            patient.HealthPlan = null;
+        }
+
+        await repository.SaveAsync();
+        return patients.Count();
+    }
+
+    public async Task RemovePaymentsHealthPlan(Guid healthPlanId)
+    {
+        var payments = await repository.GetPaymentsByHealthPlan(healthPlanId);
+        foreach (var payment in payments)
+        {
+            payment.HealthPlan = null;
+        }
+
+        await repository.SaveAsync();
+    }
+    
+    public async Task RemovePaymentsDoctor(Guid doctorId)
+    {
+        var payments = await repository.GetPaymentsByDoctor(doctorId);
+        foreach (var payment in payments)
+        {
+            payment.Doctor = null;
+        }
+
+        await repository.SaveAsync();
+    }
+    
+    public async Task RemovePaymentsPatient(Guid patientId)
+    {
+        var payments = await repository.GetPaymentsByPatient(patientId);
+        foreach (var payment in payments)
+        {
+            payment.Patient = null;
+        }
+
+        await repository.SaveAsync();
     }
 }

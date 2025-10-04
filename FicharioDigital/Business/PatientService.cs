@@ -8,7 +8,11 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace FicharioDigital.Business;
 
-public class PatientService(IPatientRepository repository, ICategoryRepository categoryRepository, IHealthPlanRepository healthPlanRepository) : IPatientService
+public class PatientService(IPatientRepository repository,
+    ICategoryRepository categoryRepository,
+    IHealthPlanRepository healthPlanRepository,
+    IPaymentService paymentService
+    ) : IPatientService
 {
     public async Task<PageableResponseDto<Patient>> ListAsync(ListPatientRequestDto request)
     {
@@ -304,6 +308,7 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
         {
             throw new KeyNotFoundException("Paciente não encontrado.");
         }
+        await paymentService.RemovePaymentsPatient(id);
         await repository.DeleteAsync(patient);
     }
 
@@ -341,6 +346,11 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
         return patients.Count();
     }
 
+    public async Task<List<Patient>> SearchAsync(string name)
+    {
+        return await repository.SearchAsync(name);
+    }
+
     public async Task<long> RemoveHealthPlanFromPatientsAsync(Guid healthPlanId)
     {
         var patients = await repository.GetPatientsByHealthPlanId(healthPlanId);
@@ -357,4 +367,6 @@ public class PatientService(IPatientRepository repository, ICategoryRepository c
         await repository.SaveAsync();
         return patients.Count();
     }
+    
+    
 }

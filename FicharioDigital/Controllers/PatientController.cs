@@ -18,6 +18,13 @@ public class PatientController(IPatientService service) : ControllerBase
         return Ok(patients);
     }
     
+    [HttpGet("Search")]
+    public async Task<IActionResult> List([FromQuery] string name)
+    {
+        var patients = await service.SearchAsync(name);
+        return Ok(patients);
+    }
+    
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {

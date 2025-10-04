@@ -6,6 +6,7 @@ namespace FicharioDigital.Business.Interfaces;
 public interface IPatientService
 {
     Task<PageableResponseDto<Patient>> ListAsync(ListPatientRequestDto request);
+    Task<List<Patient>> SearchAsync(string name);
     Task<Patient> CreateAsync(PatientRequestDto request);
     Task<Patient?> GetPatientById(Guid id);
     Task<Patient?> GetPatientByCpf(string cpf);

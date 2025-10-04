@@ -8,6 +8,19 @@ namespace FicharioDigital.Data.Repositories;
 
 public class PatientRepository(AppDbContext context) : IPatientRepository
 {
+
+    public async Task<List<Patient>> SearchAsync(string name)
+    {
+        var query = context.Patients.AsQueryable();
+        if (!string.IsNullOrEmpty(name))
+        {
+            var searchTerm = StringUtils.NormalizeString(name);
+            var pattern = $"%{searchTerm}%";
+            query = query.Where(p => p.Name != null && EF.Functions.ILike(EF.Functions.Unaccent(p.Name), pattern));
+        }
+        return await query.Take(10).ToListAsync();
+    }
+
     public async Task<PageableResponseDto<Patient>> ListAsync(ListPatientRequestDto request)
     {
         var query = context.Patients.Include(p => p.Contacts).Include(p => p.Category).Include(p => p.HealthPlan)

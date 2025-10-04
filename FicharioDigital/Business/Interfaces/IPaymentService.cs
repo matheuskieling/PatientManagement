@@ -9,4 +9,8 @@ public interface IPaymentService
     Task<List<Payment>> ListAsync(PaymentListingRequestDto request);
     Task<Payment> UpdatePayment(PaymentRequestDto request);
     Task DeleteAsync(Guid id);
+    
+    Task RemovePaymentsHealthPlan(Guid healthPlanId);
+    Task RemovePaymentsDoctor(Guid doctorId);
+    Task RemovePaymentsPatient(Guid pacientId);
 }

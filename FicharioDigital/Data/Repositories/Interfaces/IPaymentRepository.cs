@@ -10,4 +10,7 @@ public interface IPaymentRepository
     Task<List<Payment>> ListAsync(PaymentListingRequestDto request);
     Task SaveAsync();
     Task DeleteAsync(Payment payment);
+    Task<List<Payment>> GetPaymentsByHealthPlan(Guid healthPlanId);
+    Task<List<Payment>> GetPaymentsByDoctor(Guid doctorId);
+    Task<List<Payment>> GetPaymentsByPatient(Guid patientId);
 }

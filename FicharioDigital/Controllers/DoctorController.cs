@@ -10,7 +10,7 @@ namespace FicharioDigital.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/[controller]")]
-public class DoctorController(IDoctorService service) : ControllerBase
+public class DoctorController(IDoctorService service, IPaymentService paymentService) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> List()
@@ -50,6 +50,7 @@ public class DoctorController(IDoctorService service) : ControllerBase
     {
         try
         {
+            await paymentService.RemovePaymentsDoctor(id);
             await service.DeleteAsync(id);
             return NoContent();
         }

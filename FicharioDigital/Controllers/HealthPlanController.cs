@@ -10,7 +10,7 @@ namespace FicharioDigital.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/[controller]")]
-public class HealthPlanController(IHealthPlanRepository repository, IPatientService patientService) : ControllerBase
+public class HealthPlanController(IHealthPlanRepository repository, IPatientService patientService, IPaymentService paymentService) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> List()
@@ -113,6 +113,7 @@ public class HealthPlanController(IHealthPlanRepository repository, IPatientServ
         }
 
         await patientService.RemoveHealthPlanFromPatientsAsync(healthPlan.Id);
+        await paymentService.RemovePaymentsHealthPlan(healthPlan.Id);
         
         await repository.DeleteAsync(healthPlan);
         return NoContent();
