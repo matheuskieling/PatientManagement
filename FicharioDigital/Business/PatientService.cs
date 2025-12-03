@@ -205,7 +205,8 @@ public class PatientService(IPatientRepository repository,
         {
             foreach (var fileNumber in fileNumbers)
             {
-                if (fileNumber != index)
+                // Needs to check previous number to understand that it is not a duplicate
+                if (fileNumber != index && fileNumber != index - 1)
                 {
                     nextFileNumber = index;
                     break;
@@ -219,7 +220,8 @@ public class PatientService(IPatientRepository repository,
         {
             foreach (var fileNumber in fileNumbersEco)
             {
-                if (fileNumber != index)
+                // same here
+                if (fileNumber != index && fileNumber != index - 1)
                 {
                     nextFileNumberEco = index;
                     break;
