@@ -1,4 +1,4 @@
-﻿using FicharioDigital.Business.Interfaces;
+using FicharioDigital.Business.Interfaces;
 using FicharioDigital.Data.Repositories.Interfaces;
 using FicharioDigital.Model;
 using FicharioDigital.Model.DTO;
@@ -12,7 +12,7 @@ public class PatientService(IPatientRepository repository,
     ICategoryRepository categoryRepository,
     IHealthPlanRepository healthPlanRepository,
     IPaymentService paymentService
-    ) : IPatientService
+) : IPatientService
 {
     public async Task<PageableResponseDto<Patient>> ListAsync(ListPatientRequestDto request)
     {
@@ -206,7 +206,7 @@ public class PatientService(IPatientRepository repository,
             foreach (var fileNumber in fileNumbers)
             {
                 // Needs to check previous number to understand that it is not a duplicate
-                if (fileNumber != index && fileNumber != index - 1)
+                if (fileNumber != index)
                 {
                     nextFileNumber = index;
                     break;
@@ -221,14 +221,13 @@ public class PatientService(IPatientRepository repository,
             foreach (var fileNumber in fileNumbersEco)
             {
                 // same here
-                if (fileNumber != index && fileNumber != index - 1)
+                if (fileNumber != index)
                 {
                     nextFileNumberEco = index;
                     break;
                 }
                 index++;
             }
-
             nextFileNumberEco = index;
         }
 
