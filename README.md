@@ -1,6 +1,6 @@
 # Fichario Digital
 
-A REST API built to help a doctor to manage he's clinic's patient records and finances. It handles the full lifecycle of patient data — registration, search, categorization, health plan association — along with financial tracking of income and expenses.
+A REST API built to help a doctor to manage he's clinic's patient records and finances. It handles the full lifecycle of patient data, registration, search, categorization, health plan association, along with financial tracking of income and expenses.
 
 ## Tech Stack
 
@@ -112,3 +112,6 @@ These scripts tear down and recreate the Docker volume, giving you a clean datab
 | **Categories** | `GET /api/category`, `POST /api/category`, `POST /api/category/update`, `POST /api/category/delete` |
 
 All endpoints except `/api/auth/*` require a `Bearer` token in the `Authorization` header.
+
+#IMPORTANT NOTE
+This is a real app made for a clinic and was authorized to be in a public repo by the *client*
