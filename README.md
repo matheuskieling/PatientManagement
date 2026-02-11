@@ -1,6 +1,6 @@
 # Fichario Digital
 
-A REST API built to help a doctor clinic manage patient records and finances. It handles the full lifecycle of patient data — registration, search, categorization, health plan association — along with financial tracking of income and expenses.
+A REST API built to help a doctor to manage he's clinic's patient records and finances. It handles the full lifecycle of patient data — registration, search, categorization, health plan association — along with financial tracking of income and expenses.
 
 ## Tech Stack
 
