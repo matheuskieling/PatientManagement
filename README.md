@@ -113,5 +113,5 @@ These scripts tear down and recreate the Docker volume, giving you a clean datab
 
 All endpoints except `/api/auth/*` require a `Bearer` token in the `Authorization` header.
 
-#IMPORTANT NOTE
+# IMPORTANT NOTE
 This is a real app made for a clinic and was authorized to be in a public repo by the *client*
